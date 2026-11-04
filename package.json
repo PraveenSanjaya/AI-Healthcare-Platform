@@ -52,5 +52,14 @@
     "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.1.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,mjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,css,yml}": [
+      "prettier --write"
+    ]
   }
 }
