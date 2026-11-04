@@ -9,28 +9,36 @@ communication, local SEO, reviews and clinic operations, with PHI safeguards and
 **Status:** Phase 1 (scaffold & infrastructure) of 8. See [docs/PLAN.md](docs/PLAN.md) and
 [docs/DECISIONS.md](docs/DECISIONS.md).
 
-## Setup (Windows + WSL2 Ubuntu + Docker Desktop)
+## Setup (local, no Docker)
 
-Run everything from a WSL bash shell, with the repo checked out inside the WSL filesystem
-(e.g. `~/dev/AI-Healthcare-Platform`) for best performance. Docker Desktop must have WSL
-integration enabled for your Ubuntu distro. Requires Node.js 22+.
+Requires Node.js 22+. The database is Prisma's local Postgres dev server.
 
 ```bash
 git clone https://github.com/PraveenSanjaya/AI-Healthcare-Platform.git
 cd AI-Healthcare-Platform
-cp .env.example .env          # then edit AUTH_SECRET and the seed admin password
-docker compose up -d          # PostgreSQL 16 on localhost:5432
+cp .env.example .env          # then set AUTH_SECRET, DATABASE_URL and SEED_ADMIN_PASSWORD (see below)
 npm install
-npx prisma migrate dev        # creates the schema (first run also generates the initial migration)
+npx prisma dev -d -n clinicassist   # start the local Postgres in the background (once per boot)
+npx prisma migrate dev        # apply migrations
+npm run db:seed               # create the admin from SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD
 npm run dev                   # http://localhost:3000
 ```
 
-Optional DB UI (Adminer on http://localhost:8080): `docker compose --profile tools up -d`.
+- `npx prisma dev ls` lists servers; `npx prisma dev stop clinicassist` stops it; start it again
+  with `npx prisma dev start clinicassist`. Data persists between runs.
+- `prisma dev` prints a direct TCP connection string (`postgres://...@localhost:<port>/...`).
+  Create a database (e.g. `clinicassist`) and put that URL in `DATABASE_URL`. `.env` is git-ignored;
+  never commit it.
+- `SEED_ADMIN_PASSWORD` must be 12+ characters with upper-case, lower-case and a digit, otherwise
+  the seed refuses to run. Re-running the seed never changes an existing admin's password.
 
-`npm run seed` is added in Phase 3 together with the template library.
+### Alternative: Docker
 
-> The initial migration has not been generated yet: Phase 1 was built on a machine without Docker.
-> Your first `npx prisma migrate dev` creates `prisma/migrations/` — commit it.
+`docker-compose.yml` is kept: `docker compose up -d` starts PostgreSQL 16 on `localhost:5432`
+(use the `DATABASE_URL` from `.env.example`). Optional DB UI (Adminer on http://localhost:8080):
+`docker compose --profile tools up -d`.
+
+`npm run seed` for the template library is added in Phase 3.
 
 ## Scripts
 
@@ -42,6 +50,7 @@ Optional DB UI (Adminer on http://localhost:8080): `docker compose --profile too
 | `npm test`                              | Vitest unit/integration tests               |
 | `npm run format` / `format:check`       | Prettier                                    |
 | `npm run db:generate` / `db:migrate`    | Prisma client / migrations                  |
+| `npm run db:seed`                       | Create/refresh the seed admin               |
 
 A Husky pre-commit hook runs lint-staged (ESLint + Prettier on staged files).
 

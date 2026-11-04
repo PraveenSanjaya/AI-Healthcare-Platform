@@ -1,10 +1,7 @@
-import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
-import { authConfig } from "./auth.config";
+import { auth } from "./auth";
 import { decideAccess } from "@/lib/auth/route-access";
 import { isRole } from "@/lib/auth/roles";
-
-const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const r = req.auth?.user?.role;
