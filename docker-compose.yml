@@ -18,7 +18,7 @@ services:
 
   adminer:
     image: adminer
-    profiles: ["tools"]   # opt-in: docker compose --profile tools up -d
+    profiles: ["tools"] # opt-in: docker compose --profile tools up -d
     ports:
       - "8080:8080"
     depends_on:

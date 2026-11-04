@@ -1,4 +1,4 @@
-﻿# Decisions
+# Decisions
 
 Log of choices made where the spec was ambiguous or a version conflict forced a change.
 
