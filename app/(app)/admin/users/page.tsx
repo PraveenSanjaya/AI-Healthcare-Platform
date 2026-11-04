@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { hasRole } from "@/lib/auth/roles";
@@ -8,14 +9,13 @@ import { UserRow } from "./user-row";
 
 export const metadata = { title: "Users" };
 
-export default async function UsersPage() {
+async function UsersContent() {
   const session = await auth();
   if (!session?.user) redirect("/login");
   if (!hasRole(session.user.role, "ADMIN")) redirect("/dashboard");
   const users = await listUsers(session, prismaUserRepo);
   return (
-    <main className="mx-auto max-w-4xl space-y-8 p-6">
-      <h1 className="text-2xl font-semibold">User management</h1>
+    <>
       <table className="w-full text-left text-sm">
         <thead>
           <tr>
@@ -43,6 +43,17 @@ export default async function UsersPage() {
         <h2 className="mb-3 text-lg font-medium">Create user</h2>
         <CreateUserForm />
       </section>
+    </>
+  );
+}
+
+export default function UsersPage() {
+  return (
+    <main className="mx-auto max-w-4xl space-y-8 p-6">
+      <h1 className="text-2xl font-semibold">User management</h1>
+      <Suspense fallback={<p>Loading users…</p>}>
+        <UsersContent />
+      </Suspense>
     </main>
   );
 }
