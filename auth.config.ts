@@ -11,6 +11,7 @@ export const authConfig = {
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: string }).role;
+        token.checkedAt = Date.now();
       }
       return token;
     },
