@@ -65,6 +65,7 @@ model Template {
   description      String
   audience         Audience @default(INTERNAL)
   archived         Boolean  @default(false)
+  allowedRoles     Role[]   @default([ADMIN, MANAGER, STAFF])
   currentVersionId String?  @unique
   createdAt        DateTime @default(now())
 
