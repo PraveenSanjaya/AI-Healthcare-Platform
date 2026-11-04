@@ -1,0 +1,167 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  STAFF
+}
+
+enum Audience {
+  INTERNAL
+  PATIENT_FACING
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(STAFF)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  generations     Generation[]
+  favorites       Favorite[]
+  versionsCreated TemplateVersion[]
+  auditLogs       AuditLog[]
+
+  @@index([createdAt])
+}
+
+model ClinicProfile {
+  id                  Int      @id @default(1)
+  clinicName          String   @default("")
+  city                String   @default("")
+  phone               String   @default("")
+  bookingUrl          String   @default("")
+  addressNotes        String   @default("")
+  specialtyType       String   @default("")
+  brandTone           String   @default("warm") // warm | formal | friendly
+  privacyRegime       String   @default("Generic") // HIPAA – US | PDPA – Sri Lanka | GDPR – EU | Generic
+  defaultReadingLevel String   @default("5th grade")
+  updatedAt           DateTime @updatedAt
+}
+
+model Category {
+  id        String     @id @default(cuid())
+  name      String
+  slug      String     @unique
+  order     Int        @default(0)
+  templates Template[]
+}
+
+model Template {
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  categoryId       String
+  title            String
+  description      String
+  audience         Audience @default(INTERNAL)
+  archived         Boolean  @default(false)
+  currentVersionId String?  @unique
+  createdAt        DateTime @default(now())
+
+  category       Category          @relation(fields: [categoryId], references: [id])
+  versions       TemplateVersion[] @relation("TemplateVersions")
+  currentVersion TemplateVersion?  @relation("CurrentVersion", fields: [currentVersionId], references: [id])
+  favorites      Favorite[]
+
+  @@index([categoryId])
+  @@index([createdAt])
+}
+
+model TemplateVersion {
+  id           String   @id @default(cuid())
+  templateId   String
+  version      Int
+  role         String
+  task         String
+  context      String
+  constraints  String
+  outputFormat String
+  variables    Json
+  maxWords     Int?
+  maxChars     Int?
+  createdById  String?
+  createdAt    DateTime @default(now())
+
+  template    Template     @relation("TemplateVersions", fields: [templateId], references: [id], onDelete: Cascade)
+  currentFor  Template?    @relation("CurrentVersion")
+  createdBy   User?        @relation(fields: [createdById], references: [id])
+  generations Generation[]
+
+  @@unique([templateId, version])
+  @@index([createdById])
+  @@index([createdAt])
+}
+
+model Generation {
+  id                String    @id @default(cuid())
+  userId            String
+  templateVersionId String
+  inputs            Json
+  renderedPrompt    String
+  output            String
+  model             String
+  inputTokens       Int       @default(0)
+  outputTokens      Int       @default(0)
+  reviewed          Boolean   @default(false)
+  reviewedAt        DateTime?
+  createdAt         DateTime  @default(now())
+
+  user            User                   @relation(fields: [userId], references: [id])
+  templateVersion TemplateVersion        @relation(fields: [templateVersionId], references: [id])
+  refinements     GenerationRefinement[]
+
+  @@index([userId])
+  @@index([templateVersionId])
+  @@index([createdAt])
+}
+
+model GenerationRefinement {
+  id           String   @id @default(cuid())
+  generationId String
+  instruction  String
+  output       String
+  createdAt    DateTime @default(now())
+
+  generation Generation @relation(fields: [generationId], references: [id], onDelete: Cascade)
+
+  @@index([generationId])
+  @@index([createdAt])
+}
+
+model Favorite {
+  userId     String
+  templateId String
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@id([userId, templateId])
+  @@index([templateId])
+}
+
+// Append-only: application code only ever creates rows.
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id])
+
+  @@index([actorId])
+  @@index([action])
+  @@index([createdAt])
+}
