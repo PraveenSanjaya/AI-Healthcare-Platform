@@ -20,7 +20,7 @@ cp .env.example .env          # then set AUTH_SECRET, DATABASE_URL and SEED_ADMI
 npm install
 npx prisma dev -d -n clinicassist   # start the local Postgres in the background (once per boot)
 npx prisma migrate dev        # apply migrations
-npm run db:seed               # create the admin from SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD
+npm run db:seed               # create the admin (SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD) and seed the template library
 npm run dev                   # http://localhost:3000
 ```
 
@@ -38,7 +38,7 @@ npm run dev                   # http://localhost:3000
 (use the `DATABASE_URL` from `.env.example`). Optional DB UI (Adminer on http://localhost:8080):
 `docker compose --profile tools up -d`.
 
-`npm run seed` for the template library is added in Phase 3.
+The seed is idempotent: re-running it creates no duplicates and adds a new template version only when the text in `prisma/seed-data/templates.ts` changed.
 
 ## Scripts
 
@@ -50,7 +50,7 @@ npm run dev                   # http://localhost:3000
 | `npm test`                              | Vitest unit/integration tests               |
 | `npm run format` / `format:check`       | Prettier                                    |
 | `npm run db:generate` / `db:migrate`    | Prisma client / migrations                  |
-| `npm run db:seed`                       | Create/refresh the seed admin               |
+| `npm run db:seed`                       | Seed the admin and the template library     |
 
 A Husky pre-commit hook runs lint-staged (ESLint + Prettier on staged files).
 
