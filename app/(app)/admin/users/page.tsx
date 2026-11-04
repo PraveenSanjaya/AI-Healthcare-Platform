@@ -7,7 +7,6 @@ import { CreateUserForm } from "./create-user-form";
 import { UserRow } from "./user-row";
 
 export const metadata = { title: "Users" };
-export const dynamic = "force-dynamic";
 
 export default async function UsersPage() {
   const session = await auth();
