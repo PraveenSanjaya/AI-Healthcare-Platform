@@ -16,6 +16,7 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
+    "db:clean-e2e": "tsx scripts/clean-e2e.ts",
     "prepare": "husky"
   },
   "dependencies": {
