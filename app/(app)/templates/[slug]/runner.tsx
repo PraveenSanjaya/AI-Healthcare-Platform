@@ -27,6 +27,14 @@ export type RunnerProps = {
   version: RenderableVersion;
   profile: ClinicProfileData;
   isAdmin: boolean;
+  /** A saved draft being reopened from History (your own generations only). */
+  initial?: {
+    generationId: string;
+    inputs: Record<string, string>;
+    draft: string;
+    refinements: string[];
+    reviewed: boolean;
+  };
 };
 
 type Phase = "idle" | "streaming" | "done";
@@ -37,7 +45,7 @@ export function Runner(props: RunnerProps) {
   const schema = useMemo(() => buildFormSchema(variables), [variables]);
   const form = useForm<FormValues>({
     resolver: zodResolver(schema) as never,
-    defaultValues: defaultValues(variables, props.profile),
+    defaultValues: { ...defaultValues(variables, props.profile), ...props.initial?.inputs },
     mode: "onChange",
   });
   const {
@@ -64,12 +72,14 @@ export function Runner(props: RunnerProps) {
     }
   }
 
-  const [phase, setPhase] = useState<Phase>("idle");
-  const [draft, setDraft] = useState("");
+  const [phase, setPhase] = useState<Phase>(props.initial ? "done" : "idle");
+  const [draft, setDraft] = useState(props.initial?.draft ?? "");
   const [failure, setFailure] = useState<GenerateFailure | null>(null);
-  const [generationId, setGenerationId] = useState<string | null>(null);
-  const [reviewed, setReviewed] = useState(false);
-  const [refinements, setRefinements] = useState<string[]>([]);
+  const [generationId, setGenerationId] = useState<string | null>(
+    props.initial?.generationId ?? null,
+  );
+  const [reviewed, setReviewed] = useState(props.initial?.reviewed ?? false);
+  const [refinements, setRefinements] = useState<string[]>(props.initial?.refinements ?? []);
   const abort = useRef<AbortController | null>(null);
   useEffect(() => () => abort.current?.abort(), []);
 
