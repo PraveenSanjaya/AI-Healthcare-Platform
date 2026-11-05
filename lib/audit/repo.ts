@@ -37,7 +37,10 @@ function toRow(r: Prisma.AuditLogGetPayload<{ include: typeof include }>): Audit
   };
 }
 
-export const auditRepo: AuditReadRepo & { create(entry: AuditEntry): Promise<void> } = {
+export const auditRepo: AuditReadRepo & {
+  create(entry: AuditEntry): Promise<void>;
+  countByAction(action: string, from: Date, toExclusive: Date): Promise<number>;
+} = {
   async create(entry) {
     const metadata = sanitizeAuditMetadata(entry.metadata);
     await prisma.auditLog.create({
@@ -74,6 +77,11 @@ export const auditRepo: AuditReadRepo & { create(entry: AuditEntry): Promise<voi
       take: limit,
     });
     return rows.map(toRow);
+  },
+
+  /** Entries of one action inside a half-open date range, for the analytics page. */
+  countByAction(action: string, from: Date, toExclusive: Date) {
+    return prisma.auditLog.count({ where: where({ action, from, toExclusive }) });
   },
 
   async actors() {

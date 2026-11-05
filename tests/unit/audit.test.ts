@@ -86,7 +86,14 @@ describe("the audit log is append-only", () => {
   it("the repository exposes create and read operations only", async () => {
     const { auditRepo } = await import("@/lib/audit/repo");
     const names = Object.keys(auditRepo).sort();
-    expect(names).toEqual(["actions", "actors", "create", "list", "listForExport"]);
+    expect(names).toEqual([
+      "actions",
+      "actors",
+      "countByAction",
+      "create",
+      "list",
+      "listForExport",
+    ]);
     for (const n of names)
       expect(n).not.toMatch(/update|delete|remove|upsert|destroy|clear|truncate/i);
   });
@@ -170,6 +177,9 @@ describe("parseAuditFilters / toQuery", () => {
       }),
     ).toEqual({ action: "PHI_BLOCKED", actor: "cuid1", from: "2026-11-01", page: 2 });
     expect(parseAuditFilters({ action: "drop table", page: "0" })).toEqual({ page: 1 });
+  });
+  it("ignores impossible calendar dates", () => {
+    expect(parseAuditFilters({ from: "2026-13-45", to: "2026-02-30" })).toEqual({ page: 1 });
   });
   it("turns dates into an inclusive range", () => {
     expect(
