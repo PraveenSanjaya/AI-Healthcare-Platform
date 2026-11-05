@@ -14,6 +14,7 @@ async function Nav() {
       <Link href="/templates">Templates</Link>
       <Link href="/history">History</Link>
       {user && hasRole(user.role, "MANAGER") && <Link href="/admin/settings">Settings</Link>}
+      {user && hasRole(user.role, "ADMIN") && <Link href="/admin/templates">Manage templates</Link>}
       {user && hasRole(user.role, "ADMIN") && <Link href="/admin/users">Users</Link>}
       <span className="ml-auto text-gray-600">{user?.email}</span>
       <form

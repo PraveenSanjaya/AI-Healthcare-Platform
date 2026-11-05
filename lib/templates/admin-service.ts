@@ -5,6 +5,7 @@ import {
   changedFields,
   slugSchema,
   templateInputSchema,
+  type TemplateContent,
   validateTemplateContent,
   type TemplateInput,
 } from "./editor";
@@ -23,7 +24,7 @@ export type AdminVersion = {
   version: number;
   createdAt: Date;
   createdByName: string | null;
-  content: VersionContent;
+  content: TemplateContent;
 };
 
 export type AdminTemplateDetail = {
