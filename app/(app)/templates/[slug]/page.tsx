@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { loadClinicProfile } from "@/lib/ai/repo";
+import { prismaHistoryRepo } from "@/lib/history/repo";
+import { getHistoryDetail, latestDraft } from "@/lib/history/service";
 import { AuthError } from "@/lib/auth/guards";
 import { hasRole } from "@/lib/auth/roles";
 import { prismaTemplateRepo } from "@/lib/templates/repo";
@@ -23,8 +25,18 @@ function Block({ title, children }: { title: string; children: React.ReactNode }
   );
 }
 
-async function Detail({ params }: { params: Promise<{ slug: string }> }) {
+type Search = Record<string, string | string[] | undefined>;
+
+async function Detail({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<Search>;
+}) {
   const { slug } = await params;
+  const sp = await searchParams;
+  const reopenId = Array.isArray(sp.reopen) ? sp.reopen[0] : sp.reopen;
   const session = await auth();
   let t;
   try {
@@ -37,6 +49,7 @@ async function Detail({ params }: { params: Promise<{ slug: string }> }) {
   const v = t.current;
   const vars = variablesSchema.safeParse(v?.variables).data ?? [];
   const profile = await loadClinicProfile();
+  const initial = reopenId ? await loadReopen(session, reopenId, t.slug) : undefined;
   return (
     <article className="space-y-6">
       <header className="space-y-2">
@@ -109,17 +122,45 @@ async function Detail({ params }: { params: Promise<{ slug: string }> }) {
           }}
           profile={profile}
           isAdmin={hasRole(session?.user?.role, "ADMIN")}
+          initial={initial}
         />
       )}
     </article>
   );
 }
 
-export default function TemplatePage({ params }: { params: Promise<{ slug: string }> }) {
+/** Your own saved draft for this template, or undefined (never someone else's). */
+async function loadReopen(
+  session: Parameters<typeof getHistoryDetail>[0],
+  id: string,
+  slug: string,
+) {
+  try {
+    const d = await getHistoryDetail(session, prismaHistoryRepo, id);
+    if (!d.isOwner || d.templateSlug !== slug) return undefined;
+    return {
+      generationId: d.id,
+      inputs: d.inputs,
+      draft: latestDraft(d),
+      refinements: d.refinements.map((r) => r.instruction),
+      reviewed: d.reviewed,
+    };
+  } catch {
+    return undefined;
+  }
+}
+
+export default function TemplatePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<Search>;
+}) {
   return (
     <main className="mx-auto max-w-3xl p-6">
       <Suspense fallback={<p>Loading…</p>}>
-        <Detail params={params} />
+        <Detail params={params} searchParams={searchParams} />
       </Suspense>
     </main>
   );

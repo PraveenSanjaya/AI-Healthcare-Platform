@@ -1,40 +1,91 @@
 import "dotenv/config";
 import { prisma } from "../lib/db/prisma";
-import { cleanE2eData, isLocalDatabaseUrl, type CleanDb } from "../lib/dev/clean-e2e";
+import {
+  cleanE2eData,
+  isLocalDatabaseUrl,
+  type CleanDb,
+  type CleanPlan,
+} from "../lib/dev/clean-e2e";
+
+/** Generations written by the e2e users, or run on the e2e sandbox template. */
+const generationWhere = (plan: CleanPlan) => ({
+  OR: [
+    { userId: { in: plan.userIds } },
+    { templateVersion: { templateId: { in: plan.templateIds } } },
+  ],
+});
 
 const db: CleanDb = {
-  findCandidates: () =>
+  findUsers: () =>
     prisma.user.findMany({
       where: { email: { startsWith: "e2e-staff", endsWith: "@clinic.local" }, role: "STAFF" },
       select: { id: true, email: true, role: true },
     }),
 
-  async count(ids) {
-    const [generations, refinements, auditLogs] = await Promise.all([
-      prisma.generation.count({ where: { userId: { in: ids } } }),
-      prisma.generationRefinement.count({ where: { generation: { userId: { in: ids } } } }),
-      prisma.auditLog.count({ where: { actorId: { in: ids } } }),
+  findTemplates: () =>
+    prisma.template.findMany({
+      where: { slug: { startsWith: "e2e-sandbox" } },
+      select: { id: true, slug: true },
+    }),
+
+  async count(plan) {
+    const gens = await prisma.generation.findMany({
+      where: generationWhere(plan),
+      select: { id: true },
+    });
+    const genIds = gens.map((g) => g.id);
+    const [refinements, auditLogs] = await Promise.all([
+      prisma.generationRefinement.count({ where: { generationId: { in: genIds } } }),
+      prisma.auditLog.count({ where: auditWhere(plan, genIds) }),
     ]);
-    return { users: ids.length, generations, refinements, auditLogs };
+    return {
+      users: plan.userIds.length,
+      templates: plan.templateIds.length,
+      generations: genIds.length,
+      refinements,
+      auditLogs,
+    };
   },
 
-  remove: (ids) =>
+  remove: (plan) =>
     prisma.$transaction(async (tx) => {
+      const gens = await tx.generation.findMany({
+        where: generationWhere(plan),
+        select: { id: true },
+      });
+      const genIds = gens.map((g) => g.id);
       const refinements = await tx.generationRefinement.count({
-        where: { generation: { userId: { in: ids } } },
+        where: { generationId: { in: genIds } },
       });
       // Audit rows reference users, so they go first; refinements go with their generation.
-      const auditLogs = await tx.auditLog.deleteMany({ where: { actorId: { in: ids } } });
-      const generations = await tx.generation.deleteMany({ where: { userId: { in: ids } } });
-      const users = await tx.user.deleteMany({ where: { id: { in: ids } } });
+      const auditLogs = await tx.auditLog.deleteMany({ where: auditWhere(plan, genIds) });
+      await tx.generation.deleteMany({ where: { id: { in: genIds } } });
+      // A template points at its current version, so unlink before deleting it (versions cascade).
+      await tx.template.updateMany({
+        where: { id: { in: plan.templateIds } },
+        data: { currentVersionId: null },
+      });
+      const templates = await tx.template.deleteMany({ where: { id: { in: plan.templateIds } } });
+      const users = await tx.user.deleteMany({ where: { id: { in: plan.userIds } } });
       return {
         users: users.count,
-        generations: generations.count,
+        templates: templates.count,
+        generations: genIds.length,
         refinements,
         auditLogs: auditLogs.count,
       };
     }),
 };
+
+function auditWhere(plan: CleanPlan, genIds: string[]) {
+  return {
+    OR: [
+      { actorId: { in: plan.userIds } },
+      { entityType: "Generation", entityId: { in: genIds } },
+      { entityType: "Template", entityId: { in: plan.templateIds } },
+    ],
+  };
+}
 
 async function main() {
   const dryRun = process.argv.includes("--dry-run");
@@ -45,12 +96,16 @@ async function main() {
     dryRun,
     protectedEmails: [process.env.SEED_ADMIN_EMAIL ?? ""],
   });
-  if (result.users.length === 0) {
-    console.log("No e2e users found. Nothing to do.");
+  if (result.users.length === 0 && result.templates.length === 0) {
+    console.log("No e2e data found. Nothing to do.");
     return;
   }
-  console.log(`${result.dryRun ? "Would delete" : "Deleted"} ${result.users.length} e2e user(s):`);
-  for (const email of result.users) console.log(`  - ${email}`);
+  const verb = result.dryRun ? "Would delete" : "Deleted";
+  console.log(
+    `${verb} ${result.users.length} e2e user(s) and ${result.templates.length} template(s):`,
+  );
+  for (const email of result.users) console.log(`  - user ${email}`);
+  for (const slug of result.templates) console.log(`  - template ${slug}`);
   const c = result.counts;
   console.log(
     `${result.dryRun ? "Would remove" : "Removed"}: ${c.generations} generations, ` +

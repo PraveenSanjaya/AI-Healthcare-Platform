@@ -3,20 +3,31 @@ import {
   cleanE2eData,
   isE2eStaff,
   isLocalDatabaseUrl,
+  isE2eSandbox,
+  type CandidateTemplate,
   type CandidateUser,
   type CleanDb,
+  type CleanPlan,
 } from "@/lib/dev/clean-e2e";
 
 const u = (email: string, role = "STAFF", id = email): CandidateUser => ({ id, email, role });
 
-function fakeDb(users: CandidateUser[]) {
-  const removed: string[][] = [];
+function fakeDb(users: CandidateUser[], templates: CandidateTemplate[] = []) {
+  const removed: CleanPlan[] = [];
+  const counts = (p: CleanPlan) => ({
+    users: p.userIds.length,
+    templates: p.templateIds.length,
+    generations: 5,
+    refinements: 2,
+    auditLogs: 9,
+  });
   const db: CleanDb = {
-    findCandidates: async () => users,
-    count: async (ids) => ({ users: ids.length, generations: 5, refinements: 2, auditLogs: 9 }),
-    remove: async (ids) => {
-      removed.push(ids);
-      return { users: ids.length, generations: 5, refinements: 2, auditLogs: 9 };
+    findUsers: async () => users,
+    findTemplates: async () => templates,
+    count: async (p) => counts(p),
+    remove: async (p) => {
+      removed.push(p);
+      return counts(p);
     },
   };
   return { db, removed };
@@ -61,6 +72,20 @@ describe("isLocalDatabaseUrl", () => {
   });
 });
 
+describe("isE2eSandbox", () => {
+  it("matches only the sandbox template slug", () => {
+    expect(isE2eSandbox({ id: "1", slug: "e2e-sandbox-template" })).toBe(true);
+    for (const slug of [
+      "e2e-sandbox-template-2",
+      "faq-schema-writer",
+      "my-e2e-sandbox-template",
+      "",
+    ]) {
+      expect(isE2eSandbox({ id: "1", slug }), slug).toBe(false);
+    }
+  });
+});
+
 describe("cleanE2eData", () => {
   const users = [
     u("admin@clinic.local", "ADMIN"),
@@ -68,34 +93,66 @@ describe("cleanE2eData", () => {
     u("e2e-staff-1762345678901@clinic.local"),
     u("nimali@clinic.local"),
   ];
+  const templates = [
+    { id: "t1", slug: "e2e-sandbox-template" },
+    { id: "t2", slug: "faq-schema-writer" },
+  ];
 
-  it("removes only the e2e staff accounts", async () => {
-    const { db, removed } = fakeDb(users);
+  it("removes only the e2e staff accounts and the sandbox template", async () => {
+    const { db, removed } = fakeDb(users, templates);
     const r = await cleanE2eData(db);
     expect(r.users).toEqual(["e2e-staff@clinic.local", "e2e-staff-1762345678901@clinic.local"]);
-    expect(removed).toEqual([["e2e-staff@clinic.local", "e2e-staff-1762345678901@clinic.local"]]);
-    expect(r.counts).toEqual({ users: 2, generations: 5, refinements: 2, auditLogs: 9 });
+    expect(r.templates).toEqual(["e2e-sandbox-template"]);
+    expect(removed).toEqual([
+      {
+        userIds: ["e2e-staff@clinic.local", "e2e-staff-1762345678901@clinic.local"],
+        templateIds: ["t1"],
+      },
+    ]);
+    expect(r.counts).toEqual({
+      users: 2,
+      templates: 1,
+      generations: 5,
+      refinements: 2,
+      auditLogs: 9,
+    });
     expect(r.dryRun).toBe(false);
   });
+  it("removes the sandbox template even when there are no e2e users", async () => {
+    const { db, removed } = fakeDb([u("admin@clinic.local", "ADMIN")], templates);
+    const r = await cleanE2eData(db);
+    expect(r.users).toEqual([]);
+    expect(removed).toEqual([{ userIds: [], templateIds: ["t1"] }]);
+  });
   it("a dry run counts but removes nothing", async () => {
-    const { db, removed } = fakeDb(users);
+    const { db, removed } = fakeDb(users, templates);
     const r = await cleanE2eData(db, { dryRun: true });
     expect(r.dryRun).toBe(true);
     expect(r.counts.generations).toBe(5);
     expect(removed).toEqual([]);
   });
   it("does nothing when there is nothing to clean", async () => {
-    const { db, removed } = fakeDb([u("admin@clinic.local", "ADMIN"), u("nimali@clinic.local")]);
+    const { db, removed } = fakeDb(
+      [u("admin@clinic.local", "ADMIN"), u("nimali@clinic.local")],
+      [{ id: "t2", slug: "faq-schema-writer" }],
+    );
     const r = await cleanE2eData(db);
     expect(r.users).toEqual([]);
-    expect(r.counts).toEqual({ users: 0, generations: 0, refinements: 0, auditLogs: 0 });
+    expect(r.templates).toEqual([]);
+    expect(r.counts).toEqual({
+      users: 0,
+      templates: 0,
+      generations: 0,
+      refinements: 0,
+      auditLogs: 0,
+    });
     expect(removed).toEqual([]);
   });
   it("skips protected emails even if they look like e2e accounts", async () => {
-    const { db, removed } = fakeDb(users);
+    const { db, removed } = fakeDb(users, []);
     const r = await cleanE2eData(db, { protectedEmails: ["E2E-staff@clinic.local", ""] });
     expect(r.users).toEqual(["e2e-staff-1762345678901@clinic.local"]);
-    expect(removed[0]).toEqual(["e2e-staff-1762345678901@clinic.local"]);
+    expect(removed[0].userIds).toEqual(["e2e-staff-1762345678901@clinic.local"]);
   });
   it("ignores a candidate list that contains non-e2e users", async () => {
     const { db } = fakeDb([u("admin@clinic.local", "ADMIN")]);

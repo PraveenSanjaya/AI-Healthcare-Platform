@@ -12,6 +12,9 @@ export type ClinicProfileData = {
   emergencyNumber: string;
 };
 
+export const BRAND_TONES = ["warm", "formal", "friendly"] as const;
+export const PRIVACY_REGIMES = ["HIPAA – US", "PDPA – Sri Lanka", "GDPR – EU", "Generic"] as const;
+
 /** Defaults for a clinic that has not filled in its profile (Sri Lanka). */
 export const DEFAULT_CLINIC_PROFILE: ClinicProfileData = {
   clinicName: "",

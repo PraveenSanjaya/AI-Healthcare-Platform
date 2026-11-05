@@ -24,7 +24,8 @@ export type SeedDb = {
   findTemplate(slug: string): Promise<{
     id: string;
     latestVersion: number;
-    current: { content: VersionContent } | null;
+    /** `editedByUser`: the current version was saved by a person in the template editor. */
+    current: { content: VersionContent; editedByUser?: boolean } | null;
   } | null>;
   createTemplate(slug: string, meta: TemplateMeta): Promise<string>;
   updateTemplate(id: string, meta: TemplateMeta): Promise<void>;
@@ -89,6 +90,11 @@ export async function seedTemplates(
       const id = await db.createTemplate(t.slug, meta);
       await db.addVersion(id, 1, content);
       summary.created++;
+      continue;
+    }
+    // A version saved in the template editor wins: re-seeding must never undo an admin's edit.
+    if (existing.current?.editedByUser) {
+      summary.unchanged++;
       continue;
     }
     await db.updateTemplate(existing.id, meta);

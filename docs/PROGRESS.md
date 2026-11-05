@@ -1,0 +1,31 @@
+# Progress
+
+Resume point for an interrupted session: say "continue from docs/PROGRESS.md".
+
+**Current:** Phase 6 (`feature/phase-6-history-export`): code, unit and e2e tests done; final checks, PR and merge next.
+
+## Done
+
+| Phase | PR | Merged |
+| ----- | -- | ------ |
+| 1-4 (scaffold, auth, templates, safety layer) | #1-#8 | yes |
+| 5 AI runner | #9 | yes |
+| 5 Playwright tests | #10 | yes |
+
+## Phase 6 open items
+
+- [x] History (`/history`, filters, detail, reopen) - code and unit tests done
+- [x] Export (.md, .docx, .pdf; server-side review gate; EXPORTED audit) - done
+- [x] Clinic settings (`/admin/settings`) - done
+- [x] Template editor (`/admin/templates`, versions, diff, archive) - done
+- [x] E2E tests for Phase 6 (history visibility, export gate, template v2, settings in prompt)
+- [ ] Full checks (lint, typecheck, format, unit+coverage, build, e2e), PR, merge
+
+## Later
+
+- Phase 7: analytics and audit log. Phase 8: hardening, CI, docs, v1.0.0 release.
+
+## Run rules
+
+- 13.1 check before the first commit and every push. If only the active `gh` account is wrong and PraveenSanjaya is logged in, run `gh auth switch -u PraveenSanjaya` and confirm (DECISIONS #38).
+- Dev DB: `npx prisma dev start clinicassist`; on "Connection terminated unexpectedly" stop/start it. Run `npm run db:clean-e2e` after e2e runs.

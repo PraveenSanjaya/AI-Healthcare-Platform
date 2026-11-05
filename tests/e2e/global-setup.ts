@@ -2,6 +2,7 @@ import "dotenv/config";
 import fs from "node:fs";
 import path from "node:path";
 import { chromium, type FullConfig } from "@playwright/test";
+import { ensureDatabaseHealthy } from "./ensure-db";
 
 export const ADMIN_STATE = path.join(__dirname, ".auth", "admin.json");
 
@@ -12,6 +13,7 @@ export default async function globalSetup(config: FullConfig) {
   if (!email || !password) {
     throw new Error("SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD must be set in .env");
   }
+  await ensureDatabaseHealthy();
   const baseURL = config.projects[0].use.baseURL!;
   fs.mkdirSync(path.dirname(ADMIN_STATE), { recursive: true });
 
