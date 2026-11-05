@@ -14,11 +14,12 @@ Resume point for an interrupted session: say "continue from docs/PROGRESS.md".
 
 ## Phase 6 open items
 
-- [ ] History (`/history`, filters, detail, reopen)
-- [ ] Export (.md, .docx, .pdf; server-side review gate; EXPORTED audit)
-- [ ] Clinic settings (`/admin/settings`)
-- [ ] Template editor (`/admin/templates`, versions, diff, archive)
-- [ ] Unit and E2E tests
+- [x] History (`/history`, filters, detail, reopen) - code and unit tests done
+- [x] Export (.md, .docx, .pdf; server-side review gate; EXPORTED audit) - done
+- [x] Clinic settings (`/admin/settings`) - done
+- [x] Template editor (`/admin/templates`, versions, diff, archive) - done
+- [ ] E2E tests for Phase 6 (history visibility, export gate, template v2, settings in prompt)
+- [ ] Full checks (lint, typecheck, format, unit+coverage, build, e2e), PR, merge
 
 ## Later
 
