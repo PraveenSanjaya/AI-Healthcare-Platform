@@ -352,9 +352,6 @@ export const TEMPLATES: TemplateSeed[] = [
     maxChars: 160,
   },
   {
-    // NOTE: the specification text for this template's constraints was cut off after
-    // "any possible emergency ->". The constraints below are a conservative reading
-    // and must be confirmed against the full specification (see docs/DECISIONS.md).
     slug: "phone-triage-escalation-guide",
     category: "practice-operations",
     title: "Phone Triage Escalation Guide",
@@ -365,9 +362,10 @@ export const TEMPLATES: TemplateSeed[] = [
       "Receptionists must decide whether to transfer to the triage nurse, book a routine slot, or direct the caller to emergency care.",
     task: "Write a decision tree for receptionists covering these scenarios: {{scenarios}}",
     constraints:
-      "Any possible emergency must direct the caller to emergency services immediately, without waiting for a callback. Receptionists do not assess or diagnose; flag where the clinic's own protocol or a clinician must confirm the action. Give no clinical advice.",
+      'Any possible emergency: the receptionist advises the caller to call {{emergency_number}} FIRST, before anything else. Begin the guide with the banner "Must be approved by the clinic\'s medical director before use". Give no diagnosis. Give no treatment advice. Receptionists do not assess symptoms.',
     outputFormat: 'A list of the form "If [scenario] -> Then [action]".',
     variables: [
+      text("emergency_number", "Emergency number", { default: "1990" }),
       {
         ...text("scenarios", "Scenarios", {
           default: "chest pain, high fever in an infant, medication refill, billing dispute",
