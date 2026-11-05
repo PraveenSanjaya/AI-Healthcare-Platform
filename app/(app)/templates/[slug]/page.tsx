@@ -97,9 +97,16 @@ async function Detail({ params }: { params: Promise<{ slug: string }> }) {
           slug={t.slug}
           title={t.title}
           audience={t.audience}
-          variables={vars}
-          maxWords={v.maxWords}
-          maxChars={v.maxChars}
+          version={{
+            role: v.role,
+            context: v.context,
+            task: v.task,
+            constraints: v.constraints,
+            outputFormat: v.outputFormat,
+            variables: vars,
+            maxWords: v.maxWords,
+            maxChars: v.maxChars,
+          }}
           profile={profile}
           isAdmin={hasRole(session?.user?.role, "ADMIN")}
         />

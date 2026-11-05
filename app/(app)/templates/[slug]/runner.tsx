@@ -12,19 +12,18 @@ import {
   type GenerateRequestBody,
 } from "@/lib/ai/client/stream";
 import type { ClinicProfileData } from "@/lib/ai/profile";
-import type { TemplateVariable } from "@/lib/templates/types";
+import type { RenderableVersion } from "@/lib/ai/render";
 import { findPhiInInputs, redactAllInputs } from "@/lib/safety/inputs";
 import { DraftViewer } from "./draft-viewer";
 import { VariableField } from "./fields";
 import { FieldPhiNotice, PhiSummary } from "./phi-check";
+import { PromptPanel } from "./prompt-panel";
 
 export type RunnerProps = {
   slug: string;
   title: string;
   audience: "INTERNAL" | "PATIENT_FACING";
-  variables: TemplateVariable[];
-  maxWords: number | null;
-  maxChars: number | null;
+  version: RenderableVersion;
   profile: ClinicProfileData;
   isAdmin: boolean;
 };
@@ -32,7 +31,8 @@ export type RunnerProps = {
 type Phase = "idle" | "streaming" | "done";
 
 export function Runner(props: RunnerProps) {
-  const { slug, variables } = props;
+  const { slug } = props;
+  const variables = props.version.variables;
   const schema = useMemo(() => buildFormSchema(variables), [variables]);
   const form = useForm<FormValues>({
     resolver: zodResolver(schema) as never,
@@ -137,6 +137,7 @@ export function Runner(props: RunnerProps) {
           onReason={setReason}
           onRedactAll={redactAll}
         />
+        <PromptPanel version={props.version} values={values} profile={props.profile} />
         <button
           type="submit"
           disabled={busy || blocked}
@@ -146,7 +147,12 @@ export function Runner(props: RunnerProps) {
         </button>
       </form>
       {failure && <FailureMessage failure={failure} />}
-      <DraftViewer text={draft} streaming={busy} />
+      <DraftViewer
+        text={draft}
+        streaming={busy}
+        maxWords={props.version.maxWords ?? null}
+        maxChars={props.version.maxChars ?? null}
+      />
     </div>
   );
 }
