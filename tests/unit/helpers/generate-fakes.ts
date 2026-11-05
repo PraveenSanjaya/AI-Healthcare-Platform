@@ -62,8 +62,15 @@ export function makeDeps(
         renderedPrompt: data.renderedPrompt,
         output: data.output,
         refinements: [],
+        reviewed: false,
+        reviewedAt: null,
       });
       return id;
+    },
+    markReviewed: async (id, at) => {
+      const g = store.get(id)!;
+      g.reviewed = true;
+      g.reviewedAt = at;
     },
     find: async (id) => {
       const g = store.get(id);
@@ -77,6 +84,11 @@ export function makeDeps(
     },
     addRefinement: async (generationId, instruction, output) => {
       refinements.push({ generationId, instruction, output });
+      const g = store.get(generationId);
+      if (g) {
+        g.reviewed = false;
+        g.reviewedAt = null;
+      }
       return `ref-${refinements.length}`;
     },
   };

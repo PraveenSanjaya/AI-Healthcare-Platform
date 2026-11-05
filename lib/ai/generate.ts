@@ -17,6 +17,7 @@ import { checkRateLimit, rateLimitPerHour, rateLimitWindowStart } from "./rate-l
 export const AUDIT = {
   GENERATION_CREATED: "GENERATION_CREATED",
   GENERATION_REFINED: "GENERATION_REFINED",
+  GENERATION_REVIEWED: "GENERATION_REVIEWED",
   PHI_BLOCKED: "PHI_BLOCKED",
   PHI_OVERRIDE: "PHI_OVERRIDE",
 } as const;
@@ -42,7 +43,9 @@ export type GenerationRepo = {
     outputTokens: number;
   }): Promise<string>;
   find(id: string): Promise<GenerationRecord | null>;
+  /** Changes the text, so any earlier review no longer applies and is cleared. */
   addRefinement(generationId: string, instruction: string, output: string): Promise<string>;
+  markReviewed(id: string, at: Date): Promise<void>;
 };
 
 export type GenerationRecord = {
@@ -53,6 +56,8 @@ export type GenerationRecord = {
   renderedPrompt: string;
   output: string;
   refinements: { instruction: string; output: string }[];
+  reviewed: boolean;
+  reviewedAt: Date | null;
 };
 
 export type GenerateDeps = {

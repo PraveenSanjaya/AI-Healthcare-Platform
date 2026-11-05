@@ -44,14 +44,26 @@ export const prismaGenerationRepo: GenerationRepo = {
       renderedPrompt: g.renderedPrompt,
       output: g.output,
       refinements: g.refinements.map((r) => ({ instruction: r.instruction, output: r.output })),
+      reviewed: g.reviewed,
+      reviewedAt: g.reviewedAt,
     };
   },
   async addRefinement(generationId, instruction, output) {
-    const r = await prisma.generationRefinement.create({
-      data: { generationId, instruction, output },
-      select: { id: true },
+    return prisma.$transaction(async (tx) => {
+      const r = await tx.generationRefinement.create({
+        data: { generationId, instruction, output },
+        select: { id: true },
+      });
+      // New text needs a new review.
+      await tx.generation.update({
+        where: { id: generationId },
+        data: { reviewed: false, reviewedAt: null },
+      });
+      return r.id;
     });
-    return r.id;
+  },
+  async markReviewed(id, at) {
+    await prisma.generation.update({ where: { id }, data: { reviewed: true, reviewedAt: at } });
   },
 };
 
