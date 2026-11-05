@@ -71,6 +71,14 @@ describe("guards", () => {
 });
 
 describe("route access", () => {
+  it("lets managers open /admin/settings but nothing else under /admin", () => {
+    expect(decideAccess("/admin/settings", "MANAGER")).toEqual({ action: "allow" });
+    expect(decideAccess("/admin/settings", "ADMIN")).toEqual({ action: "allow" });
+    expect(decideAccess("/admin/settings", "STAFF")).toEqual({ action: "forbidden" });
+    expect(decideAccess("/admin/templates", "MANAGER")).toEqual({ action: "forbidden" });
+    expect(decideAccess("/admin/users", "MANAGER")).toEqual({ action: "forbidden" });
+    expect(decideAccess("/admin/settingsx", "MANAGER")).toEqual({ action: "forbidden" });
+  });
   it("API paths answer 401 instead of redirecting when signed out", () => {
     expect(decideAccess("/api/generate", null)).toEqual({ action: "unauthorized" });
     expect(decideAccess("/api/generate", "STAFF")).toEqual({ action: "allow" });
