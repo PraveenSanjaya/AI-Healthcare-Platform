@@ -174,6 +174,10 @@ test("P6-4. Editing a template creates a new version and the runner uses it", as
     await expect(admin.getByRole("button", { name: "Archive", exact: true })).toBeVisible();
   }
 
+  // Next keeps the previous route (the New form) hidden in the DOM after a client-side redirect,
+  // which makes label locators ambiguous. A fresh load gives a clean page.
+  await admin.goto(`/admin/templates/${SANDBOX}`);
+  await expect(admin.getByRole("region", { name: "Version history" })).toBeVisible();
   const badge = admin.getByText(/^Version \d+$/).first();
   const before = Number((await badge.innerText()).replace("Version ", ""));
 
