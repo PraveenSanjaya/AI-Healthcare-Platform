@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { AuthError, requireUser, type SessionUser } from "@/lib/auth/guards";
-import { detectPHI, type PhiType } from "@/lib/safety/phi";
+import { findPhiInInputs, type PhiFindingDto } from "@/lib/safety/inputs";
 import {
   TemplateNotFoundError,
   getTemplate,
@@ -81,22 +81,10 @@ export const generateBodySchema = z.object({
   override: z.object({ reason: z.string().trim().min(10).max(500) }).optional(),
 });
 
-export type PhiFindingDto = {
-  field: string;
-  type: PhiType;
-  match: string;
-  start: number;
-  end: number;
-};
-
-export function findPhiInInputs(inputs: Record<string, string>): PhiFindingDto[] {
-  return Object.entries(inputs).flatMap(([field, value]) =>
-    detectPHI(value).map((f) => ({ field, ...f })),
-  );
-}
-
 const json = (body: unknown, status: number, headers: Record<string, string> = {}) =>
   Response.json(body, { status, headers: { "Cache-Control": "no-store", ...headers } });
+
+export { findPhiInInputs, type PhiFindingDto };
 
 export const maxTokensFor = (maxWords?: number | null) =>
   maxWords ? Math.min(MAX_OUTPUT_TOKENS, Math.ceil(maxWords * 2.5) + 256) : MAX_OUTPUT_TOKENS;
