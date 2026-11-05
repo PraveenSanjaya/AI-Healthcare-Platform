@@ -12,23 +12,11 @@ import type { ClinicProfileData } from "./profile";
 import { RenderError, renderTemplate, type RenderableVersion } from "./render";
 import { buildSystemPrompt } from "./systemPrompt";
 import { ProviderError, type ChatMessage, type LLMProvider, type Usage } from "./providers/types";
+import { AUDIT, type AuditEntry } from "@/lib/audit/actions";
 import { checkRateLimit, rateLimitPerHour, rateLimitWindowStart } from "./rate-limit";
 
-export const AUDIT = {
-  GENERATION_CREATED: "GENERATION_CREATED",
-  GENERATION_REFINED: "GENERATION_REFINED",
-  GENERATION_REVIEWED: "GENERATION_REVIEWED",
-  PHI_BLOCKED: "PHI_BLOCKED",
-  PHI_OVERRIDE: "PHI_OVERRIDE",
-} as const;
-
-export type AuditEntry = {
-  actorId: string;
-  action: string;
-  entityType: string;
-  entityId?: string;
-  metadata?: Record<string, unknown>;
-};
+export { AUDIT };
+export type { AuditEntry };
 
 export type GenerationRepo = {
   usageSince(userId: string, since: Date): Promise<{ count: number; oldest: Date | null }>;
