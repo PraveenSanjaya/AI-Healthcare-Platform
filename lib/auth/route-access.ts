@@ -23,6 +23,10 @@ export function decideAccess(pathname: string, role: AppRole | null): AccessDeci
   if (!role) {
     return { action: "redirect", to: `/login?callbackUrl=${encodeURIComponent(pathname)}` };
   }
+  // Analytics is for managers and admins.
+  if (pathname === "/analytics" || pathname.startsWith("/analytics/")) {
+    return hasRole(role, "MANAGER") ? { action: "allow" } : { action: "forbidden" };
+  }
   // Managers may use the clinic settings page; everything else under /admin is admin-only.
   if (pathname === "/admin/settings" || pathname.startsWith("/admin/settings/")) {
     return hasRole(role, "MANAGER") ? { action: "allow" } : { action: "forbidden" };

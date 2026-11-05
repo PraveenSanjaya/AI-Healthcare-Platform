@@ -71,6 +71,13 @@ describe("guards", () => {
 });
 
 describe("route access", () => {
+  it("analytics is for managers and admins only", () => {
+    expect(decideAccess("/analytics", "MANAGER")).toEqual({ action: "allow" });
+    expect(decideAccess("/analytics", "ADMIN")).toEqual({ action: "allow" });
+    expect(decideAccess("/analytics", "STAFF")).toEqual({ action: "forbidden" });
+    expect(decideAccess("/analytics", null)).toMatchObject({ action: "redirect" });
+    expect(decideAccess("/analyticsx", "STAFF")).toEqual({ action: "allow" });
+  });
   it("lets managers open /admin/settings but nothing else under /admin", () => {
     expect(decideAccess("/admin/settings", "MANAGER")).toEqual({ action: "allow" });
     expect(decideAccess("/admin/settings", "ADMIN")).toEqual({ action: "allow" });
