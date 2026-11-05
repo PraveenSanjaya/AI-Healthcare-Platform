@@ -34,6 +34,7 @@ function prismaSeedDb(tx: Prisma.TransactionClient): SeedDb {
         latestVersion: latest._max.version ?? 0,
         current: cv
           ? {
+              editedByUser: cv.createdById !== null,
               content: {
                 role: cv.role,
                 context: cv.context,

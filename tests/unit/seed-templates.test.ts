@@ -131,6 +131,25 @@ describe("seedTemplates", () => {
     expect(res).toEqual({ created: 0, versioned: 1, unchanged: TEMPLATES.length - 1 });
     expect(m.templates.get(TEMPLATES[0].slug)!.versions).toHaveLength(2);
   });
+  it("never touches a template whose current version was saved in the editor", async () => {
+    const m = memoryDb();
+    await seedTemplates(m.db, CATEGORIES, TEMPLATES);
+    const realFind = m.db.findTemplate.bind(m.db);
+    m.db.findTemplate = async (slug) => {
+      const r = await realFind(slug);
+      return r && slug === TEMPLATES[0].slug && r.current
+        ? { ...r, current: { ...r.current, editedByUser: true } }
+        : r;
+    };
+    const changed = TEMPLATES.map((t, i) =>
+      i === 0 ? { ...t, title: "Seed rename", task: `${t.task} (seed change)` } : t,
+    );
+    const res = await seedTemplates(m.db, CATEGORIES, changed);
+    expect(res).toEqual({ created: 0, versioned: 0, unchanged: TEMPLATES.length });
+    const t = m.templates.get(TEMPLATES[0].slug)!;
+    expect(t.versions).toHaveLength(1);
+    expect(t.meta.title).toBe(TEMPLATES[0].title);
+  });
   it("a title-only change updates metadata without a new version", async () => {
     const m = memoryDb();
     await seedTemplates(m.db, CATEGORIES, TEMPLATES);
