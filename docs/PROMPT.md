@@ -144,3 +144,32 @@ Built from the clinic profile, then the template's role. Must include:
 
 - Works end to end with `LLM_PROVIDER=mock` and no API key.
 - Tests: providers (mock), route auth/role/PHI 422/override/429, rendering into the prompt, review gating. Playwright not required yet.
+
+## Phase 6 — History, export, clinic settings, template editor
+
+**History (`/history`):**
+
+- Paginated generations: template, user, date, review status. STAFF see only their own; MANAGER and ADMIN see all (server-enforced).
+- Filters: template, date range, reviewed/unreviewed. Detail view: inputs, output, refinements; "Reopen" loads it into the runner to refine further.
+
+**Export:**
+
+- From the runner and history detail: .md, .docx (`docx` package), .pdf. Server-side, auth-checked, audit logged (`EXPORTED`).
+- PATIENT_FACING generations can't be exported until reviewed: enforce on the SERVER.
+- Footer on every export: "AI draft — reviewed by <name> on <date>" (or "AI draft — not reviewed" for internal ones).
+
+**Clinic settings (`/admin/settings`; ADMIN full, MANAGER may edit profile fields):**
+
+- All ClinicProfile fields: name, city/area, phone, booking URL, address/parking notes, specialty type, brand tone (warm/formal/friendly), privacy regime (HIPAA-US / PDPA-Sri Lanka / GDPR-EU / Generic), reading level, emergency number.
+- `emergencyNumber` required (non-blank); zod-validated; changes audit logged.
+
+**Template editor (`/admin/templates`, ADMIN):**
+
+- List active and archived; create and edit with a form editor and live preview (`renderTemplate` with sample inputs).
+- Saving creates a NEW TemplateVersion (old generations keep theirs); version history with a simple field diff.
+- Edit variables (name, label, type, required, default, options, help text, fromProfile), audience, allowedRoles, maxWords/maxChars.
+- Validation: every `{{placeholder}}` has a variable and vice versa.
+- Archive/unarchive (archived hidden from the library).
+- Audit: `TEMPLATE_CREATED`, `TEMPLATE_VERSIONED`, `TEMPLATE_ARCHIVED`.
+
+**Tests:** unit tests (history visibility, export gating, settings/editor roles, versioning, placeholder validation, export builders). E2E: staff vs admin history visibility; export blocked before review and allowed after; editing a template creates v2 and the runner uses it; a settings change appears in the rendered prompt.
