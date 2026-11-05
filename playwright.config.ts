@@ -30,6 +30,7 @@ export default defineConfig({
       LLM_PROVIDER: "mock",
       ANTHROPIC_API_KEY: "",
       RATE_LIMIT_PER_HOUR: "1000",
+      DB_POOL_MAX: "2", // the local prisma dev database is unstable with many sessions
       AUTH_TRUST_HOST: "true",
       AUTH_URL: baseURL,
       NEXTAUTH_URL: baseURL,
