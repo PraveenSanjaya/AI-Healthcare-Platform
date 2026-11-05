@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { buildFormSchema, defaultValues, type FormValues } from "@/lib/ai/client/form";
 import {
@@ -13,8 +13,10 @@ import {
 } from "@/lib/ai/client/stream";
 import type { ClinicProfileData } from "@/lib/ai/profile";
 import type { TemplateVariable } from "@/lib/templates/types";
+import { findPhiInInputs, redactAllInputs } from "@/lib/safety/inputs";
 import { DraftViewer } from "./draft-viewer";
 import { VariableField } from "./fields";
+import { FieldPhiNotice, PhiSummary } from "./phi-check";
 
 export type RunnerProps = {
   slug: string;
@@ -40,8 +42,26 @@ export function Runner(props: RunnerProps) {
   const {
     register,
     handleSubmit,
+    setValue,
+    control,
     formState: { errors },
   } = form;
+
+  // Live PHI check: runs on every keystroke, in the browser; the server checks again.
+  const values = useWatch({ control }) as FormValues;
+  const findings = useMemo(() => findPhiInInputs(values), [values]);
+  const [reason, setReason] = useState("");
+  const overrideReason = props.isAdmin ? reason.trim() : "";
+  const overridden = findings.length > 0 && overrideReason.length >= 10;
+  const blocked = findings.length > 0 && !overridden;
+
+  function redactAll() {
+    const redacted = redactAllInputs(values);
+    for (const [name, value] of Object.entries(redacted)) {
+      if (value !== values[name])
+        setValue(name, value, { shouldValidate: true, shouldDirty: true });
+    }
+  }
 
   const [phase, setPhase] = useState<Phase>("idle");
   const [draft, setDraft] = useState("");
@@ -88,7 +108,13 @@ export function Runner(props: RunnerProps) {
   }
 
   function onGenerate(e: React.FormEvent<HTMLFormElement>) {
-    void handleSubmit((values) => run({ slug, inputs: values }))(e);
+    void handleSubmit((inputs) =>
+      run({
+        slug,
+        inputs,
+        ...(overridden ? { override: { reason: overrideReason } } : {}),
+      }),
+    )(e);
   }
   const busy = phase === "streaming";
 
@@ -97,14 +123,26 @@ export function Runner(props: RunnerProps) {
       <form onSubmit={onGenerate} className="space-y-4" noValidate>
         <h2 className="text-lg font-semibold">Run this template</h2>
         {variables.map((v) => (
-          <VariableField key={v.name} variable={v} register={register} error={errors[v.name]} />
+          <VariableField key={v.name} variable={v} register={register} error={errors[v.name]}>
+            <FieldPhiNotice
+              value={values[v.name] ?? ""}
+              findings={findings.filter((f) => f.field === v.name)}
+            />
+          </VariableField>
         ))}
+        <PhiSummary
+          findings={findings}
+          isAdmin={props.isAdmin}
+          reason={reason}
+          onReason={setReason}
+          onRedactAll={redactAll}
+        />
         <button
           type="submit"
-          disabled={busy}
+          disabled={busy || blocked}
           className="rounded-md bg-black px-3 py-2 text-white disabled:opacity-50"
         >
-          {busy ? "Generating…" : "Generate"}
+          {busy ? "Generating…" : overridden ? "Generate with override" : "Generate"}
         </button>
       </form>
       {failure && <FailureMessage failure={failure} />}
