@@ -137,15 +137,25 @@ test("10. A STAFF user can run a template but is blocked from /admin/users", asy
 }: {
   browser: Browser;
 }) => {
-  const email = `e2e-staff-${Date.now()}@clinic.local`;
+  // One reusable account: created the first time, reactivated at the start of every run.
+  const email = "e2e-staff@clinic.local";
   const password = "Valid-Passw0rd-ok";
 
   await page.goto("/admin/users");
-  await page.getByPlaceholder("Name").fill("E2E Staff");
-  await page.getByPlaceholder("Email").fill(email);
-  await page.getByPlaceholder(/Temporary password/).fill(password);
-  await page.getByRole("button", { name: "Create user" }).click();
-  await expect(page.getByText("User created.")).toBeVisible();
+  // The table streams in; wait for it (the admin's own row) before asking whether ours exists.
+  await expect(page.getByRole("row").filter({ hasText: "(you)" })).toBeVisible();
+  const row = page.getByRole("row").filter({ hasText: email });
+  if ((await row.count()) === 0) {
+    await page.getByPlaceholder("Name").fill("E2E Staff");
+    await page.getByPlaceholder("Email").fill(email);
+    await page.getByPlaceholder(/Temporary password/).fill(password);
+    await page.getByRole("button", { name: "Create user" }).click();
+    await expect(page.getByText("User created.")).toBeVisible();
+  } else if (await row.getByRole("button", { name: "Activate", exact: true }).isVisible()) {
+    await row.getByRole("button", { name: "Activate", exact: true }).click();
+  }
+  await expect(row.getByRole("button", { name: "Deactivate" })).toBeVisible();
+  await expect(row.getByRole("combobox")).toHaveValue("STAFF");
 
   const staffContext = await browser.newContext();
   try {
@@ -175,10 +185,9 @@ test("10. A STAFF user can run a template but is blocked from /admin/users", asy
     await expect(staff.getByText("Forbidden")).toBeVisible();
   } finally {
     await staffContext.close();
-    // Clean up: deactivate the throwaway account (users with history cannot be deleted).
+    // Leave the account deactivated; the next run reactivates it.
     await page.goto("/admin/users");
-    const row = page.getByRole("row").filter({ hasText: email });
     await row.getByRole("button", { name: "Deactivate" }).click();
-    await expect(row.getByRole("button", { name: "Activate" })).toBeVisible();
+    await expect(row.getByRole("button", { name: "Activate", exact: true })).toBeVisible();
   }
 });
