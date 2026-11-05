@@ -46,3 +46,8 @@ next-env.d.ts
 # generated Prisma client
 /lib/generated/
 
+
+# Playwright
+/test-results
+/playwright-report
+/tests/e2e/.auth
