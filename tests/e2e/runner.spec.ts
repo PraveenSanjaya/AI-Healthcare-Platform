@@ -1,7 +1,6 @@
-import { expect, test, type Browser, type BrowserContext, type Page } from "@playwright/test";
+import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 import { ADMIN_STATE } from "./global-setup";
-
-const DRAFT = 'section[aria-label="Generated draft"]';
+import { DRAFT, deactivateStaff, ensureStaffActive, fillSpotlight, staffSession } from "./helpers";
 
 let context: BrowserContext;
 let page: Page;
@@ -134,43 +133,12 @@ test("9. A2 (internal) can be copied without a review tick", async () => {
 
 test("10. A STAFF user can run a template but is blocked from /admin/users", async ({
   browser,
-}: {
-  browser: Browser;
 }) => {
-  // One reusable account: created the first time, reactivated at the start of every run.
-  const email = "e2e-staff@clinic.local";
-  const password = "Valid-Passw0rd-ok";
-
-  await page.goto("/admin/users");
-  // The table streams in; wait for it (the admin's own row) before asking whether ours exists.
-  await expect(page.getByRole("row").filter({ hasText: "(you)" })).toBeVisible();
-  const row = page.getByRole("row").filter({ hasText: email });
-  if ((await row.count()) === 0) {
-    await page.getByPlaceholder("Name").fill("E2E Staff");
-    await page.getByPlaceholder("Email").fill(email);
-    await page.getByPlaceholder(/Temporary password/).fill(password);
-    await page.getByRole("button", { name: "Create user" }).click();
-    await expect(page.getByText("User created.")).toBeVisible();
-  } else if (await row.getByRole("button", { name: "Activate", exact: true }).isVisible()) {
-    await row.getByRole("button", { name: "Activate", exact: true }).click();
-  }
-  await expect(row.getByRole("button", { name: "Deactivate" })).toBeVisible();
-  await expect(row.getByRole("combobox")).toHaveValue("STAFF");
-
-  const staffContext = await browser.newContext();
+  await ensureStaffActive(page);
+  const { context: staffContext, page: staff } = await staffSession(browser);
   try {
-    const staff = await staffContext.newPage();
-    await staff.goto("/login");
-    await staff.getByLabel("Email").fill(email);
-    await staff.getByLabel("Password").fill(password);
-    await staff.getByRole("button", { name: "Sign in" }).click();
-    await staff.waitForURL("**/dashboard");
-
     await staff.goto("/templates/staff-spotlight-caption");
-    await staff.locator("#var-doctor_name").fill("Perera");
-    await staff.locator("#var-specialty").fill("Cardiology");
-    await staff.locator("#var-fun_fact").fill("Runs marathons");
-    await staff.locator("#var-credentials").fill("MBBS");
+    await fillSpotlight(staff);
     await staff.getByRole("button", { name: /^Generate/ }).click();
     await expect(staff.locator(DRAFT)).toContainText("Staff Spotlight Caption");
     await expect(staff.locator("#refine-instruction")).toBeEnabled();
@@ -185,9 +153,6 @@ test("10. A STAFF user can run a template but is blocked from /admin/users", asy
     await expect(staff.getByText("Forbidden")).toBeVisible();
   } finally {
     await staffContext.close();
-    // Leave the account deactivated; the next run reactivates it.
-    await page.goto("/admin/users");
-    await row.getByRole("button", { name: "Deactivate" }).click();
-    await expect(row.getByRole("button", { name: "Activate", exact: true })).toBeVisible();
+    await deactivateStaff(page);
   }
 });
