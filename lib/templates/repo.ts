@@ -19,6 +19,7 @@ function toRow(t: DbTemplate): TemplateRow {
     category: { slug: t.category.slug, name: t.category.name, order: t.category.order },
     current: v
       ? {
+          id: v.id,
           role: v.role,
           context: v.context,
           task: v.task,

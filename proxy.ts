@@ -8,6 +8,9 @@ export default auth((req) => {
   const role = isRole(r) ? r : null;
   const d = decideAccess(req.nextUrl.pathname, role);
   if (d.action === "redirect") return NextResponse.redirect(new URL(d.to, req.nextUrl));
+  if (d.action === "unauthorized") {
+    return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 });
+  }
   if (d.action === "forbidden") return new NextResponse("Forbidden", { status: 403 });
   return NextResponse.next();
 });

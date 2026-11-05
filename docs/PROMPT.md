@@ -113,3 +113,34 @@ Built from the clinic profile, then the template's role. Must include:
 - `renderTemplate(version, inputs, profile)`: fills `{{placeholders}}`, uses clinic-profile values for `fromProfile` variables, rejects missing required variables with a clear error, never leaves an unfilled `{{...}}` in the output. Unit tests for missing required variables and profile defaults.
 - If no ClinicProfile row exists yet, seed a default one (Sri Lanka, PDPA, warm tone, 5th-grade reading level, emergency number 1990).
 - Coverage >= 80% for `lib/safety` and `lib/ai`.
+
+## Phase 5 — AI runner
+
+**LLM providers (`lib/ai`):**
+
+- `LLMProvider` interface: `streamGenerate({system, messages, maxTokens})` -> async stream of text + final usage `{inputTokens, outputTokens, model}`.
+- `MockProvider`: deterministic Markdown output that echoes the template title and respects maxWords/maxChars; default when `LLM_PROVIDER=mock` or no key.
+- `AnthropicProvider`: official `@anthropic-ai/sdk`, model from `LLM_MODEL` (e.g. `claude-sonnet-5-5`), key from `ANTHROPIC_API_KEY`. Never log keys or prompts.
+
+**Streaming route `POST /api/generate`:**
+
+- Auth required; STAFF only for templates allowed for their role (server-side).
+- zod-validate inputs; server-side `detectPHI` on ALL inputs again (never trust the client). If PHI is found: 422 with findings, unless an ADMIN override with a written reason is sent (log it).
+- `buildSystemPrompt` + `renderTemplate`, stream the response (SSE or ReadableStream).
+- Save a Generation (inputs, renderedPrompt, output, model, tokens, reviewed=false) and write AuditLog entries: `GENERATION_CREATED`, `PHI_BLOCKED`, `PHI_OVERRIDE`.
+- Rate limit per user: `RATE_LIMIT_PER_HOUR` (default 30) -> 429.
+
+**Runner UI (`/templates/[slug]`, replaces the disabled button):**
+
+- Form auto-generated from the variable schema (react-hook-form + zod), profile defaults prefilled, help text shown.
+- Live PHI check while typing: highlight matches, block Generate, and a "Redact all" button calling `redactPHI(text, { includeNames: true })`.
+- Collapsible "View full prompt" panel showing exactly what will be sent.
+- Streaming Markdown viewer; "AI draft — review before use" label always shown.
+- Word/char counter with a warning when over maxWords/maxChars.
+- Actions: Regenerate; Refine (follow-up instruction, saved as GenerationRefinement, continues the same conversation); Copy.
+- PATIENT_FACING templates: Copy stays disabled until "I have reviewed this" is ticked (sets reviewed + reviewedAt on the Generation, audit logged).
+
+**Exit criteria:**
+
+- Works end to end with `LLM_PROVIDER=mock` and no API key.
+- Tests: providers (mock), route auth/role/PHI 422/override/429, rendering into the prompt, review gating. Playwright not required yet.

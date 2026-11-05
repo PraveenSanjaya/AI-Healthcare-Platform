@@ -1,7 +1,10 @@
 import { hasRole, type AppRole } from "./roles";
 
 export type AccessDecision =
-  { action: "allow" } | { action: "redirect"; to: string } | { action: "forbidden" };
+  | { action: "allow" }
+  | { action: "redirect"; to: string }
+  | { action: "forbidden" }
+  | { action: "unauthorized" };
 
 const PUBLIC_PREFIXES = ["/login", "/api/auth"];
 
@@ -12,6 +15,10 @@ export function decideAccess(pathname: string, role: AppRole | null): AccessDeci
   if (isPublic) {
     if (role && pathname === "/login") return { action: "redirect", to: "/dashboard" };
     return { action: "allow" };
+  }
+  if (!role && (pathname === "/api" || pathname.startsWith("/api/"))) {
+    // API clients get a status code, not a redirect to the login page.
+    return { action: "unauthorized" };
   }
   if (!role) {
     return { action: "redirect", to: `/login?callbackUrl=${encodeURIComponent(pathname)}` };

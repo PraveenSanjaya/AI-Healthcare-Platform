@@ -2,12 +2,15 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { loadClinicProfile } from "@/lib/ai/repo";
 import { AuthError } from "@/lib/auth/guards";
+import { hasRole } from "@/lib/auth/roles";
 import { prismaTemplateRepo } from "@/lib/templates/repo";
 import { TemplateNotFoundError, getTemplate } from "@/lib/templates/service";
 import { variableSchema } from "@/lib/templates/types";
 import { z } from "zod";
 import { FavoriteButton } from "../favorite-button";
+import { Runner } from "./runner";
 
 const variablesSchema = z.array(variableSchema);
 
@@ -33,6 +36,7 @@ async function Detail({ params }: { params: Promise<{ slug: string }> }) {
   }
   const v = t.current;
   const vars = variablesSchema.safeParse(v?.variables).data ?? [];
+  const profile = await loadClinicProfile();
   return (
     <article className="space-y-6">
       <header className="space-y-2">
@@ -88,13 +92,25 @@ async function Detail({ params }: { params: Promise<{ slug: string }> }) {
       ) : (
         <p>This template has no published version yet.</p>
       )}
-      <button
-        type="button"
-        disabled
-        className="rounded-md bg-black px-3 py-2 text-white disabled:opacity-50"
-      >
-        Run (coming in Phase 5)
-      </button>
+      {v && (
+        <Runner
+          slug={t.slug}
+          title={t.title}
+          audience={t.audience}
+          version={{
+            role: v.role,
+            context: v.context,
+            task: v.task,
+            constraints: v.constraints,
+            outputFormat: v.outputFormat,
+            variables: vars,
+            maxWords: v.maxWords,
+            maxChars: v.maxChars,
+          }}
+          profile={profile}
+          isAdmin={hasRole(session?.user?.role, "ADMIN")}
+        />
+      )}
     </article>
   );
 }

@@ -24,6 +24,7 @@ const row = (over: Partial<TemplateRow> = {}): TemplateRow => ({
   allowedRoles: ALL,
   category: { slug: "social", name: "Social media", order: 2 },
   current: {
+    id: "v1",
     role: "a manager",
     context: "c",
     task: "t",
