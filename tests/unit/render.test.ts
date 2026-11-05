@@ -43,11 +43,17 @@ describe("renderTemplate", () => {
     expect(r.task).toBe("Write 3 items about flu shots for adults.");
     expect(r.outputFormat).toBe("Bullets with 081 234 5678.");
   });
-  it("uses clinic-profile values for fromProfile variables even when an input is given", () => {
+  it("lets user input override the clinic-profile value", () => {
     const r = renderTemplate(version, { ...inputs, city: "Colombo" }, profile);
-    expect(r.context).toContain("Clinic is in Kandy.");
+    expect(r.context).toContain("Clinic is in Colombo.");
   });
-  it("falls back to the input when the profile value is empty", () => {
+  it("uses the clinic-profile value when the input is empty or blank", () => {
+    expect(renderTemplate(version, inputs, profile).context).toContain("Clinic is in Kandy.");
+    expect(renderTemplate(version, { ...inputs, city: "   " }, profile).context).toContain(
+      "Clinic is in Kandy.",
+    );
+  });
+  it("uses the input when the profile value is empty", () => {
     const r = renderTemplate(version, { ...inputs, city: "Galle" }, { ...profile, city: "" });
     expect(r.context).toContain("Clinic is in Galle.");
   });
