@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
+import { isCalendarDate } from "@/lib/dates";
 import { AUDIT, type AuditWriter } from "./actions";
 
 export const AUDIT_PAGE_SIZE = 50;
@@ -45,7 +46,7 @@ export type AuditFilters = {
   page: number;
 };
 
-const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const day = z.string().refine(isCalendarDate, "Not a real date");
 const filterSchema = z.object({
   action: z.string().regex(/^[A-Z_]{2,60}$/),
   actor: z.string().min(1).max(100),

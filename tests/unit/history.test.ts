@@ -79,6 +79,9 @@ describe("parseHistoryFilters", () => {
       parseHistoryFilters({ from: "yesterday", to: "2026-11-05", reviewed: "maybe", page: "-4" }),
     ).toEqual({ to: "2026-11-05", page: 1 });
   });
+  it("ignores impossible calendar dates (they would otherwise reach the database)", () => {
+    expect(parseHistoryFilters({ from: "2026-13-45", to: "2026-02-30" })).toEqual({ page: 1 });
+  });
   it("uses the first value of a repeated parameter and ignores blanks", () => {
     expect(parseHistoryFilters({ template: ["a", "b"], from: "  " })).toEqual({
       template: "a",
