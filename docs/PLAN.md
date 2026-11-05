@@ -41,3 +41,7 @@ Indexes on all foreign keys and `createdAt`. Full field list: see `prisma/schema
 - [ ] **Phase 6** History, export, admin template editor, versioning
 - [ ] **Phase 7** Analytics & audit-log viewer
 - [ ] **Phase 8** Hardening & delivery (E2E, a11y, security headers, docs)
+
+## Pending items
+
+- [ ] **Phase 6/7:** the clinic profile settings form must make `emergencyNumber` required (non-blank). Template F2 now reads it from the profile and refuses to render without it (DECISIONS #25).
