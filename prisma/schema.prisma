@@ -46,6 +46,7 @@ model ClinicProfile {
   brandTone           String   @default("warm") // warm | formal | friendly
   privacyRegime       String   @default("Generic") // HIPAA – US | PDPA – Sri Lanka | GDPR – EU | Generic
   defaultReadingLevel String   @default("5th grade")
+  emergencyNumber     String   @default("1990")
   updatedAt           DateTime @updatedAt
 }
 
