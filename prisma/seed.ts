@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { prisma } from "../lib/db/prisma";
 import { seedAdmin } from "../lib/seed/admin";
+import { seedClinicProfile } from "../lib/seed/clinic-profile";
 import { seedTemplates, type SeedDb, type VersionContent } from "../lib/seed/templates";
 import { CATEGORIES, TEMPLATES } from "./seed-data/templates";
 import type { Prisma } from "../lib/generated/prisma/client";
@@ -68,6 +69,14 @@ async function main() {
     prisma.user.upsert({ where: { email }, create, update, select: { id: true, email: true } }),
   );
   console.log(`Admin ready: ${admin.email}`);
+
+  const profile = await seedClinicProfile({
+    exists: async () => (await prisma.clinicProfile.count({ where: { id: 1 } })) > 0,
+    create: async (data) => {
+      await prisma.clinicProfile.create({ data: { id: 1, ...data } });
+    },
+  });
+  console.log(`Clinic profile: ${profile}`);
 
   const summary = await prisma.$transaction((tx) =>
     seedTemplates(prismaSeedDb(tx), CATEGORIES, TEMPLATES),

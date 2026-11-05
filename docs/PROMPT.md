@@ -81,3 +81,35 @@ Seed ALL 24 templates via prisma/seed.ts (idempotent upserts by slug; running th
 - **F8 Monthly Performance Summary** (INTERNAL). Role: healthcare data analyst. Task: from {{metrics}} (patient volume, no-show rate, average wait, staff hours): top 3 wins, top 3 bottlenecks, recommendations. Output: executive summary, bulleted insights, priority action checklist. Constraint: only conclusions the numbers support; state assumptions. Vars: metrics (longtext-paste).
 
 That makes 24 templates (A1-A3, B1-B3, C1-C3, D1-D4, E1-E3, F1-F8).
+
+## Section 5 — PHI/PII detector (`lib/safety/phi.ts`)
+
+Pure function `detectPHI(text): PhiFinding[]` with `{type, match, start, end}`. Detect at least:
+
+- emails; phone numbers (international, Sri Lankan 07X XXX XXXX and +94...)
+- Sri Lankan NIC (old #########V/X and new 12-digit), US SSN, passport-like IDs
+- dates of birth (dates near "DOB"/"born"), full dates in general
+- medical record / patient IDs ("MRN", "Patient ID:" ...)
+- street addresses (basic heuristic) and postal codes
+- personal names near cues (Mr./Mrs./Ms./Dr./patient/name:), flagged, not stripped
+
+Also `redactPHI(text)` -> replaces matches with `[REDACTED-TYPE]`. At least 30 unit tests: true positives, true negatives ("20 minutes", "5th-grade", "Room 3", placeholders like `[Phone Number]` or `{{phone}}`), edge cases. Write `docs/SAFETY.md`: this is a safeguard, not a guarantee.
+
+## Section 6 — Global system prompt (`lib/ai/systemPrompt.ts`)
+
+Built from the clinic profile, then the template's role. Must include:
+
+1. Never diagnose, prescribe, recommend treatments or give dosages; if clinical judgment is needed, say a licensed clinician must decide and leave a marked blank.
+2. Use only the information provided; never invent names, dates, owners, prices, phone numbers or procedures; write `[to be confirmed]` where missing.
+3. If the material contradicts itself, point it out instead of choosing.
+4. Never confirm or imply that any individual is a patient (privacy regime: `{{privacy_regime}}`).
+5. Tone: `{{brand_tone}}`. Default reading level for patient-facing text: `{{reading_level}}`.
+6. Follow the requested output format exactly; respond in Markdown.
+
+## Phase 4 — Safety layer
+
+- `detectPHI` / `redactPHI` with 30+ tests.
+- `buildSystemPrompt(profile, template)` with tests.
+- `renderTemplate(version, inputs, profile)`: fills `{{placeholders}}`, uses clinic-profile values for `fromProfile` variables, rejects missing required variables with a clear error, never leaves an unfilled `{{...}}` in the output. Unit tests for missing required variables and profile defaults.
+- If no ClinicProfile row exists yet, seed a default one (Sri Lanka, PDPA, warm tone, 5th-grade reading level, emergency number 1990).
+- Coverage >= 80% for `lib/safety` and `lib/ai`.
