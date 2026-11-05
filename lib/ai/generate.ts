@@ -16,6 +16,7 @@ import { checkRateLimit, rateLimitPerHour, rateLimitWindowStart } from "./rate-l
 
 export const AUDIT = {
   GENERATION_CREATED: "GENERATION_CREATED",
+  GENERATION_REFINED: "GENERATION_REFINED",
   PHI_BLOCKED: "PHI_BLOCKED",
   PHI_OVERRIDE: "PHI_OVERRIDE",
 } as const;
@@ -40,6 +41,18 @@ export type GenerationRepo = {
     inputTokens: number;
     outputTokens: number;
   }): Promise<string>;
+  find(id: string): Promise<GenerationRecord | null>;
+  addRefinement(generationId: string, instruction: string, output: string): Promise<string>;
+};
+
+export type GenerationRecord = {
+  id: string;
+  userId: string;
+  templateVersionId: string;
+  inputs: Record<string, string>;
+  renderedPrompt: string;
+  output: string;
+  refinements: { instruction: string; output: string }[];
 };
 
 export type GenerateDeps = {
@@ -92,7 +105,7 @@ const phiSummary = (findings: PhiFindingDto[]) => ({
 /** One NDJSON line per event: text, then done (with the saved id) or error. */
 export type StreamLine =
   | { type: "text"; text: string }
-  | { type: "done"; generationId: string; usage: Usage }
+  | { type: "done"; generationId: string; refinementId?: string; usage: Usage }
   | { type: "error"; message: string };
 
 export function ndjsonResponse(run: (send: (line: StreamLine) => void) => Promise<void>): Response {

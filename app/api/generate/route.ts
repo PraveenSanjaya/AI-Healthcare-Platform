@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
-import { handleGenerate, type GenerateDeps } from "@/lib/ai/generate";
+import type { GenerateDeps } from "@/lib/ai/generate";
+import { handleRequest } from "@/lib/ai/handler";
 import { getProvider } from "@/lib/ai/providers";
 import { loadClinicProfile, prismaGenerationRepo, writeAudit } from "@/lib/ai/repo";
 import { prismaTemplateRepo } from "@/lib/templates/repo";
@@ -25,5 +26,5 @@ export async function POST(request: Request) {
   } catch {
     body = undefined;
   }
-  return handleGenerate(deps(), await auth(), body);
+  return handleRequest(deps(), await auth(), body);
 }

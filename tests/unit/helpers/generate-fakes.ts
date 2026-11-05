@@ -1,5 +1,5 @@
 import { TEMPLATES } from "@/prisma/seed-data/templates";
-import type { AuditEntry, GenerateDeps, GenerationRepo } from "@/lib/ai/generate";
+import type { AuditEntry, GenerateDeps, GenerationRecord, GenerationRepo } from "@/lib/ai/generate";
 import { DEFAULT_CLINIC_PROFILE } from "@/lib/ai/profile";
 import { MockProvider } from "@/lib/ai/providers";
 import type { LLMProvider } from "@/lib/ai/providers";
@@ -47,11 +47,37 @@ export function makeDeps(
     favoriteTemplateIds: async () => [],
     setFavorite: async () => {},
   };
+  const store = new Map<string, GenerationRecord>();
+  const refinements: { generationId: string; instruction: string; output: string }[] = [];
   const generations: GenerationRepo = {
     usageSince: async () => over.usage ?? { count: 0, oldest: null },
     create: async (data) => {
       created.push(data);
-      return `gen-${created.length}`;
+      const id = `gen-${created.length}`;
+      store.set(id, {
+        id,
+        userId: data.userId,
+        templateVersionId: data.templateVersionId,
+        inputs: data.inputs,
+        renderedPrompt: data.renderedPrompt,
+        output: data.output,
+        refinements: [],
+      });
+      return id;
+    },
+    find: async (id) => {
+      const g = store.get(id);
+      if (!g) return null;
+      return {
+        ...g,
+        refinements: refinements
+          .filter((r) => r.generationId === id)
+          .map(({ instruction, output }) => ({ instruction, output })),
+      };
+    },
+    addRefinement: async (generationId, instruction, output) => {
+      refinements.push({ generationId, instruction, output });
+      return `ref-${refinements.length}`;
     },
   };
   const deps: GenerateDeps = {
@@ -70,7 +96,7 @@ export function makeDeps(
     now: () => new Date("2026-11-05T12:00:00Z"),
     ...over,
   };
-  return { deps, audit, created };
+  return { deps, audit, created, store, refinements };
 }
 
 /** Read an NDJSON response body into parsed lines. */

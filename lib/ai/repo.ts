@@ -30,6 +30,29 @@ export const prismaGenerationRepo: GenerationRepo = {
     });
     return g.id;
   },
+  async find(id) {
+    const g = await prisma.generation.findUnique({
+      where: { id },
+      include: { refinements: { orderBy: { createdAt: "asc" } } },
+    });
+    if (!g) return null;
+    return {
+      id: g.id,
+      userId: g.userId,
+      templateVersionId: g.templateVersionId,
+      inputs: g.inputs as Record<string, string>,
+      renderedPrompt: g.renderedPrompt,
+      output: g.output,
+      refinements: g.refinements.map((r) => ({ instruction: r.instruction, output: r.output })),
+    };
+  },
+  async addRefinement(generationId, instruction, output) {
+    const r = await prisma.generationRefinement.create({
+      data: { generationId, instruction, output },
+      select: { id: true },
+    });
+    return r.id;
+  },
 };
 
 export async function writeAudit(e: AuditEntry): Promise<void> {
