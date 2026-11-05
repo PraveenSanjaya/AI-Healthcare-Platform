@@ -1,28 +1,37 @@
 /**
- * Removes the accounts created by the Playwright suite, with their data. Dev databases only.
- * Only STAFF users whose email is e2e-staff@clinic.local or e2e-staff-<suffix>@clinic.local
- * are ever selected, so the admin account and real data cannot be matched.
+ * Removes what the Playwright suite creates, with its data. Dev databases only.
+ *
+ * It selects exactly two kinds of rows, so the admin account and real data cannot be matched:
+ *  - STAFF users whose email is e2e-staff@clinic.local or e2e-staff-<suffix>@clinic.local
+ *  - the template with the slug e2e-sandbox-template
  */
 
 const E2E_EMAIL = /^e2e-staff(?:-[a-z0-9]+)?@clinic\.local$/i;
+export const E2E_SANDBOX_SLUG = "e2e-sandbox-template";
 
 export type CandidateUser = { id: string; email: string; role: string };
+export type CandidateTemplate = { id: string; slug: string };
+
+export type CleanPlan = { userIds: string[]; templateIds: string[] };
 
 export type CleanCounts = {
   users: number;
+  templates: number;
   generations: number;
   refinements: number;
   auditLogs: number;
 };
 
 export type CleanDb = {
-  findCandidates(): Promise<CandidateUser[]>;
-  count(userIds: string[]): Promise<CleanCounts>;
+  findUsers(): Promise<CandidateUser[]>;
+  findTemplates(): Promise<CandidateTemplate[]>;
+  count(plan: CleanPlan): Promise<CleanCounts>;
   /** Delete in dependency order, in one transaction; returns what was removed. */
-  remove(userIds: string[]): Promise<CleanCounts>;
+  remove(plan: CleanPlan): Promise<CleanCounts>;
 };
 
 export const isE2eStaff = (u: CandidateUser) => u.role === "STAFF" && E2E_EMAIL.test(u.email);
+export const isE2eSandbox = (t: CandidateTemplate) => t.slug === E2E_SANDBOX_SLUG;
 
 /** True only for a database on this machine. */
 export function isLocalDatabaseUrl(url: string | undefined): boolean {
@@ -35,19 +44,40 @@ export function isLocalDatabaseUrl(url: string | undefined): boolean {
   }
 }
 
-export type CleanResult = { users: string[]; counts: CleanCounts; dryRun: boolean };
+export type CleanResult = {
+  users: string[];
+  templates: string[];
+  counts: CleanCounts;
+  dryRun: boolean;
+};
 
 export async function cleanE2eData(
   db: CleanDb,
   opts: { dryRun?: boolean; protectedEmails?: string[] } = {},
 ): Promise<CleanResult> {
   const protectedSet = new Set((opts.protectedEmails ?? []).map((e) => e.toLowerCase()));
-  const users = (await db.findCandidates()).filter(
+  const users = (await db.findUsers()).filter(
     (u) => isE2eStaff(u) && !protectedSet.has(u.email.toLowerCase()),
   );
-  const ids = users.map((u) => u.id);
-  const empty: CleanCounts = { users: 0, generations: 0, refinements: 0, auditLogs: 0 };
-  if (ids.length === 0) return { users: [], counts: empty, dryRun: Boolean(opts.dryRun) };
-  const counts = opts.dryRun ? await db.count(ids) : await db.remove(ids);
-  return { users: users.map((u) => u.email), counts, dryRun: Boolean(opts.dryRun) };
+  const templates = (await db.findTemplates()).filter(isE2eSandbox);
+  const plan: CleanPlan = {
+    userIds: users.map((u) => u.id),
+    templateIds: templates.map((t) => t.id),
+  };
+  const dryRun = Boolean(opts.dryRun);
+  if (plan.userIds.length === 0 && plan.templateIds.length === 0) {
+    return {
+      users: [],
+      templates: [],
+      counts: { users: 0, templates: 0, generations: 0, refinements: 0, auditLogs: 0 },
+      dryRun,
+    };
+  }
+  const counts = dryRun ? await db.count(plan) : await db.remove(plan);
+  return {
+    users: users.map((u) => u.email),
+    templates: templates.map((t) => t.slug),
+    counts,
+    dryRun,
+  };
 }
