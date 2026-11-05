@@ -35,7 +35,7 @@ Indexes on all foreign keys and `createdAt`. Full field list: see `prisma/schema
 
 - [ ] **Phase 1** Scaffold & infrastructure (Next.js, TS strict, Tailwind, shadcn/ui, ESLint/Prettier, Husky, docker-compose, Prisma schema + migration, .env.example, README)
 - [x] **Phase 2** Auth & RBAC (code + unit tests done; login flow unverified against a DB, see DECISIONS #9)
-- [ ] **Phase 3** Templates & seed (24 templates, idempotent)
+- [x] **Phase 3** Templates & seed (24 templates, idempotent)
 - [ ] **Phase 4** Safety layer (PHI detector, system prompt, renderer)
 - [ ] **Phase 5** AI runner (providers, streaming, runner UI, rate limit)
 - [ ] **Phase 6** History, export, admin template editor, versioning
