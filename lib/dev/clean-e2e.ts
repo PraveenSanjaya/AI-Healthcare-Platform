@@ -2,11 +2,12 @@
  * Removes what the Playwright suite creates, with its data. Dev databases only.
  *
  * It selects exactly two kinds of rows, so the admin account and real data cannot be matched:
- *  - STAFF users whose email is e2e-staff@clinic.local or e2e-staff-<suffix>@clinic.local
+ *  - STAFF or MANAGER users whose email is e2e-staff@clinic.local, e2e-manager@clinic.local
+ *    or the same with a -<suffix>
  *  - the template with the slug e2e-sandbox-template
  */
 
-const E2E_EMAIL = /^e2e-staff(?:-[a-z0-9]+)?@clinic\.local$/i;
+const E2E_EMAIL = /^e2e-(?:staff|manager)(?:-[a-z0-9]+)?@clinic\.local$/i;
 export const E2E_SANDBOX_SLUG = "e2e-sandbox-template";
 
 export type CandidateUser = { id: string; email: string; role: string };
@@ -30,7 +31,9 @@ export type CleanDb = {
   remove(plan: CleanPlan): Promise<CleanCounts>;
 };
 
-export const isE2eStaff = (u: CandidateUser) => u.role === "STAFF" && E2E_EMAIL.test(u.email);
+/** The e2e accounts are STAFF or MANAGER; an ADMIN is never matched, whatever its email. */
+export const isE2eStaff = (u: CandidateUser) =>
+  (u.role === "STAFF" || u.role === "MANAGER") && E2E_EMAIL.test(u.email);
 export const isE2eSandbox = (t: CandidateTemplate) => t.slug === E2E_SANDBOX_SLUG;
 
 /** True only for a database on this machine. */

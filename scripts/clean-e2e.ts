@@ -18,7 +18,10 @@ const generationWhere = (plan: CleanPlan) => ({
 const db: CleanDb = {
   findUsers: () =>
     prisma.user.findMany({
-      where: { email: { startsWith: "e2e-staff", endsWith: "@clinic.local" }, role: "STAFF" },
+      where: {
+        email: { startsWith: "e2e-", endsWith: "@clinic.local" },
+        role: { in: ["STAFF", "MANAGER"] },
+      },
       select: { id: true, email: true, role: true },
     }),
 

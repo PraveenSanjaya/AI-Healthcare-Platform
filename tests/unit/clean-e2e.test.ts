@@ -38,6 +38,8 @@ describe("isE2eStaff", () => {
     expect(isE2eStaff(u("e2e-staff@clinic.local"))).toBe(true);
     expect(isE2eStaff(u("e2e-staff-1762345678901@clinic.local"))).toBe(true);
     expect(isE2eStaff(u("E2E-Staff@Clinic.Local"))).toBe(true);
+    expect(isE2eStaff(u("e2e-manager@clinic.local", "MANAGER"))).toBe(true);
+    expect(isE2eStaff(u("e2e-manager-1762345678901@clinic.local", "MANAGER"))).toBe(true);
   });
   it("never matches other people, other domains or lookalikes", () => {
     for (const email of [
@@ -53,7 +55,7 @@ describe("isE2eStaff", () => {
   });
   it("never matches a non-STAFF account, even with an e2e email", () => {
     expect(isE2eStaff(u("e2e-staff@clinic.local", "ADMIN"))).toBe(false);
-    expect(isE2eStaff(u("e2e-staff-1@clinic.local", "MANAGER"))).toBe(false);
+    expect(isE2eStaff(u("e2e-manager@clinic.local", "ADMIN"))).toBe(false);
   });
 });
 
