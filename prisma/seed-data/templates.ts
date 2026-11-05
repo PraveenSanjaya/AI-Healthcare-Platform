@@ -365,7 +365,7 @@ export const TEMPLATES: TemplateSeed[] = [
       'Any possible emergency: the receptionist advises the caller to call {{emergency_number}} FIRST, before anything else. Begin the guide with the banner "Must be approved by the clinic\'s medical director before use". Give no diagnosis. Give no treatment advice. Receptionists do not assess symptoms.',
     outputFormat: 'A list of the form "If [scenario] -> Then [action]".',
     variables: [
-      text("emergency_number", "Emergency number", { default: "1990" }),
+      profile("emergency_number", "Emergency number"),
       {
         ...text("scenarios", "Scenarios", {
           default: "chest pain, high fever in an infant, medication refill, billing dispute",

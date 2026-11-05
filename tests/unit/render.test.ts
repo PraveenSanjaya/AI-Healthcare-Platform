@@ -143,9 +143,17 @@ describe("renderTemplate with the seeded templates", () => {
       expect(r.role).not.toMatch(/\{\{/);
     },
   );
-  it("renders F2 with the default emergency number", () => {
+  it("renders F2 with the emergency number from the clinic profile", () => {
     const f2 = TEMPLATES.find((t) => t.slug === "phone-triage-escalation-guide")!;
     const r = renderTemplate(f2, { scenarios: "chest pain" }, profile);
     expect(r.constraints).toContain("call 1990 FIRST");
+    const other = renderTemplate(
+      f2,
+      { scenarios: "chest pain" },
+      { ...profile, emergencyNumber: "119" },
+    );
+    expect(other.constraints).toContain("call 119 FIRST");
+    const typed = renderTemplate(f2, { scenarios: "x", emergency_number: "112" }, profile);
+    expect(typed.constraints).toContain("call 112 FIRST");
   });
 });
