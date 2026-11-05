@@ -14,6 +14,7 @@ import {
 import type { ClinicProfileData } from "@/lib/ai/profile";
 import type { RenderableVersion } from "@/lib/ai/render";
 import { findPhiInInputs, redactAllInputs } from "@/lib/safety/inputs";
+import { DraftActions } from "./draft-actions";
 import { DraftViewer } from "./draft-viewer";
 import { VariableField } from "./fields";
 import { FieldPhiNotice, PhiSummary } from "./phi-check";
@@ -66,15 +67,25 @@ export function Runner(props: RunnerProps) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [draft, setDraft] = useState("");
   const [failure, setFailure] = useState<GenerateFailure | null>(null);
+  const [generationId, setGenerationId] = useState<string | null>(null);
+  const [reviewed, setReviewed] = useState(false);
+  const [refinements, setRefinements] = useState<string[]>([]);
   const abort = useRef<AbortController | null>(null);
   useEffect(() => () => abort.current?.abort(), []);
 
   async function run(body: GenerateRequestBody) {
+    const refining = "generationId" in body;
     abort.current?.abort();
     const controller = new AbortController();
     abort.current = controller;
     setFailure(null);
-    setDraft("");
+    if (!refining) {
+      // A new generation starts clean; a refinement keeps the old draft until text arrives.
+      setDraft("");
+      setGenerationId(null);
+      setReviewed(false);
+      setRefinements([]);
+    }
     setPhase("streaming");
     try {
       const res = await fetch("/api/generate", {
@@ -85,7 +96,7 @@ export function Runner(props: RunnerProps) {
       });
       if (!res.ok || !res.body) {
         setFailure(await failureFrom(res));
-        setPhase("idle");
+        setPhase(refining ? "done" : "idle");
         return;
       }
       let text = "";
@@ -95,26 +106,38 @@ export function Runner(props: RunnerProps) {
           setDraft(text);
         } else if (line.type === "error") {
           setFailure({ kind: "message", message: line.message });
-          setPhase("idle");
+          setPhase(refining || text ? "done" : "idle");
           return;
+        } else if (line.type === "done") {
+          setGenerationId(line.generationId);
+          setReviewed(false);
+          if (refining) setRefinements((r) => [...r, body.instruction]);
         }
       }
       setPhase("done");
     } catch (e) {
       if ((e as Error).name === "AbortError") return;
       setFailure({ kind: "message", message: "The connection was lost. Try again." });
-      setPhase("idle");
+      setPhase(refining ? "done" : "idle");
     }
   }
 
-  function onGenerate(e: React.FormEvent<HTMLFormElement>) {
-    void handleSubmit((inputs) =>
-      run({
-        slug,
-        inputs,
-        ...(overridden ? { override: { reason: overrideReason } } : {}),
-      }),
+  function submit(e?: React.BaseSyntheticEvent) {
+    return handleSubmit((inputs) =>
+      run({ slug, inputs, ...(overridden ? { override: { reason: overrideReason } } : {}) }),
     )(e);
+  }
+  function onGenerate(e: React.FormEvent<HTMLFormElement>) {
+    void submit(e);
+  }
+  function refine(instruction: string) {
+    if (!generationId) return;
+    void run({
+      slug,
+      generationId,
+      instruction,
+      ...(overrideReason.length >= 10 ? { override: { reason: overrideReason } } : {}),
+    });
   }
   const busy = phase === "streaming";
 
@@ -152,6 +175,20 @@ export function Runner(props: RunnerProps) {
         streaming={busy}
         maxWords={props.version.maxWords ?? null}
         maxChars={props.version.maxChars ?? null}
+      />
+      <DraftActions
+        audience={props.audience}
+        draft={draft}
+        ready={phase === "done" && generationId !== null && draft !== ""}
+        generationId={generationId}
+        reviewed={reviewed}
+        onReviewed={() => setReviewed(true)}
+        busy={busy}
+        onRegenerate={() => void submit()}
+        regenerateDisabled={blocked}
+        onRefine={refine}
+        overrideActive={overrideReason.length >= 10}
+        refinements={refinements}
       />
     </div>
   );
