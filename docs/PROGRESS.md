@@ -2,7 +2,7 @@
 
 Resume point for an interrupted session: say "continue from docs/PROGRESS.md".
 
-**Current:** Phase 6 (`feature/phase-6-history-export`): code, unit and e2e tests done; final checks, PR and merge next.
+**Current:** Phase 7 (`feature/phase-7-analytics-audit`).
 
 ## Done
 
@@ -11,19 +11,19 @@ Resume point for an interrupted session: say "continue from docs/PROGRESS.md".
 | 1-4 (scaffold, auth, templates, safety layer) | #1-#8 | yes |
 | 5 AI runner | #9 | yes |
 | 5 Playwright tests | #10 | yes |
+| 6 History, export, settings, template editor | #11 | yes |
 
-## Phase 6 open items
+## Phase 7 open items
 
-- [x] History (`/history`, filters, detail, reopen) - code and unit tests done
-- [x] Export (.md, .docx, .pdf; server-side review gate; EXPORTED audit) - done
-- [x] Clinic settings (`/admin/settings`) - done
-- [x] Template editor (`/admin/templates`, versions, diff, archive) - done
-- [x] E2E tests for Phase 6 (history visibility, export gate, template v2, settings in prompt)
-- [ ] Full checks (lint, typecheck, format, unit+coverage, build, e2e), PR, merge
+- [ ] Audit gaps: user create/role/activate/deactivate, login success/failure (settings and exports already audited)
+- [ ] Append-only audit repository + test, metadata sanitiser (no PHI or raw text)
+- [ ] `/admin/audit` viewer with filters and CSV export (audited)
+- [ ] `/analytics` (Recharts, server aggregates, cost estimate)
+- [ ] Unit and E2E tests, full checks, PR, merge
 
 ## Later
 
-- Phase 7: analytics and audit log. Phase 8: hardening, CI, docs, v1.0.0 release.
+- Phase 8: hardening, CI, docs, v1.0.0 release.
 
 ## Run rules
 
