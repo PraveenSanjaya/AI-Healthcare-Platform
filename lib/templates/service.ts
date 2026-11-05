@@ -11,6 +11,7 @@ export type TemplateRow = {
   allowedRoles: string[];
   category: { slug: string; name: string; order: number };
   current: {
+    id: string;
     role: string;
     context: string;
     task: string;
