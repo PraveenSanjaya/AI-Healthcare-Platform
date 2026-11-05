@@ -2,7 +2,7 @@
 
 Resume point for an interrupted session: say "continue from docs/PROGRESS.md".
 
-**Current:** Phase 6 (`feature/phase-6-history-export`), started 2026-11-05.
+**Current:** Phase 6 (`feature/phase-6-history-export`): code, unit and e2e tests done; final checks, PR and merge next.
 
 ## Done
 
@@ -18,7 +18,7 @@ Resume point for an interrupted session: say "continue from docs/PROGRESS.md".
 - [x] Export (.md, .docx, .pdf; server-side review gate; EXPORTED audit) - done
 - [x] Clinic settings (`/admin/settings`) - done
 - [x] Template editor (`/admin/templates`, versions, diff, archive) - done
-- [ ] E2E tests for Phase 6 (history visibility, export gate, template v2, settings in prompt)
+- [x] E2E tests for Phase 6 (history visibility, export gate, template v2, settings in prompt)
 - [ ] Full checks (lint, typecheck, format, unit+coverage, build, e2e), PR, merge
 
 ## Later
