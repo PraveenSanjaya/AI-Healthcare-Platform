@@ -12,6 +12,7 @@ async function Nav() {
         ClinicAssist
       </Link>
       <Link href="/templates">Templates</Link>
+      <Link href="/history">History</Link>
       {user && hasRole(user.role, "ADMIN") && <Link href="/admin/users">Users</Link>}
       <span className="ml-auto text-gray-600">{user?.email}</span>
       <form
