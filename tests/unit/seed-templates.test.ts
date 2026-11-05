@@ -39,7 +39,14 @@ describe("seed data integrity", () => {
           expect(v.options?.length, `${t.slug}.${v.name}`).toBeGreaterThan(0);
   });
   it("profile variables use the agreed names", () => {
-    const allowed = new Set(["clinic_name", "city", "phone", "booking_url", "privacy_regime"]);
+    const allowed = new Set([
+      "clinic_name",
+      "city",
+      "phone",
+      "booking_url",
+      "privacy_regime",
+      "emergency_number",
+    ]);
     for (const t of TEMPLATES)
       for (const v of t.variables)
         if (v.fromProfile) expect(allowed.has(v.name), v.name).toBe(true);

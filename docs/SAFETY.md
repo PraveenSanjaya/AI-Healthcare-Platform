@@ -28,6 +28,8 @@ Unfilled placeholders such as `[Phone Number]` and `{{phone}}` are ignored. Squa
 
 **Names are flagged but not redacted** by default, because name detection is the least reliable heuristic and silently stripping a word that is not a name would damage the text. Pass `{ includeNames: true }` to redact them too.
 
+**Phase 5 UI:** `detectPHI` keeps flagging names, and the runner's live check highlights them and blocks Generate. The "Redact all" button calls `redactPHI(text, { includeNames: true })`, so one click removes everything the detector found, names included. Only a bare `redactPHI(text)` call (the default) leaves names in place.
+
 ## Known limits
 
 - Names without a cue ("Kamal arrived late") are not detected. Cued names can be false positives.

@@ -52,8 +52,8 @@ function resolveValues(
   for (const v of version.variables) {
     const given = (inputs[v.name] ?? "").trim();
     const profileValue = v.fromProfile ? (fromProfile[v.name] ?? "").trim() : "";
-    // Clinic-profile values win for fromProfile variables; an input is only a fallback.
-    const value = profileValue || given || (v.default ?? "").trim();
+    // Precedence: what the user typed, then the clinic-profile value, then the default.
+    const value = given || profileValue || (v.default ?? "").trim();
 
     if (!value) {
       if (v.required) missing.push(`${v.label} (${v.name})`);
