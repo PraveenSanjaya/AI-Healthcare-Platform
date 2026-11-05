@@ -32,6 +32,7 @@ export function DraftActions(p: DraftActionsProps) {
 
   const patientFacing = p.audience === "PATIENT_FACING";
   const copyAllowed = p.ready && canCopy(p.audience, p.reviewed);
+  const exportAllowed = p.ready && p.generationId !== null && canCopy(p.audience, p.reviewed);
   const findings = findPhiInInputs({ instruction });
   const refineBlocked = findings.length > 0 && !p.overrideActive;
 
@@ -92,6 +93,34 @@ export function DraftActions(p: DraftActionsProps) {
           <span role="alert" className="text-sm text-red-700">
             Copy failed. Select the text and copy it manually.
           </span>
+        )}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 text-sm" role="group" aria-label="Export">
+        <span className="font-medium">Export</span>
+        {(["md", "docx", "pdf"] as const).map((f) =>
+          exportAllowed ? (
+            <a
+              key={f}
+              href={`/api/export/${p.generationId}?format=${f}`}
+              download
+              className="rounded-md border px-3 py-1.5"
+            >
+              .{f}
+            </a>
+          ) : (
+            <button
+              key={f}
+              type="button"
+              disabled
+              className="rounded-md border px-3 py-1.5 opacity-50"
+            >
+              .{f}
+            </button>
+          ),
+        )}
+        {patientFacing && !p.reviewed && (
+          <span className="text-gray-600">Review the draft to enable export.</span>
         )}
       </div>
 

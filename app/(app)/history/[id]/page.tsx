@@ -5,6 +5,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { AuthError } from "@/lib/auth/guards";
 import { prismaHistoryRepo } from "@/lib/history/repo";
+import { exportAllowed } from "@/lib/export/service";
 import { HistoryNotFoundError, getHistoryDetail } from "@/lib/history/service";
 
 export const metadata = { title: "Draft" };
@@ -48,6 +49,26 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
           </p>
         )}
       </header>
+
+      <section className="flex flex-wrap items-center gap-2 text-sm" aria-label="Export">
+        <span className="font-medium">Export latest text</span>
+        {exportAllowed(d) ? (
+          (["md", "docx", "pdf"] as const).map((f) => (
+            <a
+              key={f}
+              href={`/api/export/${d.id}?format=${f}`}
+              download
+              className="rounded-md border px-3 py-1.5"
+            >
+              .{f}
+            </a>
+          ))
+        ) : (
+          <span className="text-gray-600">
+            Patient-facing drafts can be exported after the author has reviewed them.
+          </span>
+        )}
+      </section>
 
       <section className="space-y-2">
         <h2 className="text-sm font-semibold tracking-wide text-gray-600 uppercase">Inputs</h2>
