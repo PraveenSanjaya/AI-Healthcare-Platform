@@ -6,6 +6,13 @@ export const AUDIT = {
   PHI_BLOCKED: "PHI_BLOCKED",
   PHI_OVERRIDE: "PHI_OVERRIDE",
   EXPORTED: "EXPORTED",
+  USER_CREATED: "USER_CREATED",
+  USER_ROLE_CHANGED: "USER_ROLE_CHANGED",
+  USER_ACTIVATED: "USER_ACTIVATED",
+  USER_DEACTIVATED: "USER_DEACTIVATED",
+  LOGIN_SUCCESS: "LOGIN_SUCCESS",
+  LOGIN_FAILED: "LOGIN_FAILED",
+  AUDIT_EXPORTED: "AUDIT_EXPORTED",
   SETTINGS_CHANGED: "SETTINGS_CHANGED",
   TEMPLATE_CREATED: "TEMPLATE_CREATED",
   TEMPLATE_VERSIONED: "TEMPLATE_VERSIONED",
@@ -16,7 +23,8 @@ export const AUDIT = {
 export type AuditAction = (typeof AUDIT)[keyof typeof AUDIT];
 
 export type AuditEntry = {
-  actorId: string;
+  /** null for events with no signed-in user, such as a failed login. */
+  actorId: string | null;
   action: string;
   entityType: string;
   entityId?: string;
