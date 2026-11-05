@@ -173,3 +173,20 @@ Built from the clinic profile, then the template's role. Must include:
 - Audit: `TEMPLATE_CREATED`, `TEMPLATE_VERSIONED`, `TEMPLATE_ARCHIVED`.
 
 **Tests:** unit tests (history visibility, export gating, settings/editor roles, versioning, placeholder validation, export builders). E2E: staff vs admin history visibility; export blocked before review and allowed after; editing a template creates v2 and the runner uses it; a settings change appears in the rendered prompt.
+
+## Phase 7 — Analytics & audit log
+
+**Analytics (`/analytics`, MANAGER and ADMIN):**
+
+- Generations per template, per user, per day (date range picker; default 30 days).
+- PHI blocks and overrides count, review rate for patient-facing drafts, average output length, token usage and estimated cost (per-model price table in config, labelled "estimate").
+- Charts with Recharts; numbers computed server-side with Prisma aggregates; empty states when there is no data.
+
+**Audit log:**
+
+- Fill the gaps: user create/role change/activate/deactivate, login success and failure, settings changes, exports must all write AuditLog rows.
+- Audit log is append-only: no update/delete code paths (add a test that the repository exposes none).
+- `/admin/audit` (ADMIN): paginated, filter by action, actor, date range; detail shows metadata JSON. Never store raw inputs/outputs or PHI in audit metadata.
+- CSV export of the filtered audit log (ADMIN, itself audit logged).
+
+**Tests:** unit tests for aggregates and audit coverage; E2E: manager sees analytics, staff is blocked; an action shows up in the audit viewer.
