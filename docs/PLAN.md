@@ -37,7 +37,7 @@ Indexes on all foreign keys and `createdAt`. Full field list: see `prisma/schema
 - [x] **Phase 2** Auth & RBAC (code + unit tests done; login flow unverified against a DB, see DECISIONS #9)
 - [x] **Phase 3** Templates & seed (24 templates, idempotent)
 - [x] **Phase 4** Safety layer (PHI detector, system prompt, renderer)
-- [x] **Phase 5** AI runner (providers, streaming, runner UI, rate limit; browser behaviour not yet clicked through, see DECISIONS #36)
+- [x] **Phase 5** AI runner (providers, streaming, runner UI, rate limit; API and page render verified end to end; the UI has not been clicked through in a browser)
 - [ ] **Phase 6** History, export, admin template editor, versioning
 - [ ] **Phase 7** Analytics & audit-log viewer
 - [ ] **Phase 8** Hardening & delivery (E2E, a11y, security headers, docs)
