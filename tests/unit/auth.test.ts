@@ -71,6 +71,11 @@ describe("guards", () => {
 });
 
 describe("route access", () => {
+  it("API paths answer 401 instead of redirecting when signed out", () => {
+    expect(decideAccess("/api/generate", null)).toEqual({ action: "unauthorized" });
+    expect(decideAccess("/api/generate", "STAFF")).toEqual({ action: "allow" });
+    expect(decideAccess("/api/auth/session", null)).toEqual({ action: "allow" });
+  });
   it("sends anonymous users to login with callback", () => {
     expect(decideAccess("/dashboard", null)).toEqual({
       action: "redirect",
