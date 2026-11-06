@@ -5,22 +5,25 @@ import { DEFAULT_CLINIC_PROFILE, type ClinicProfileData } from "./profile";
 
 export const prismaGenerationRepo: GenerationRepo = {
   async reserve(userId, since, limit) {
-    return prisma.$transaction(async (tx) => {
-      // Serialise concurrent requests from one user for the length of this transaction.
-      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${userId}))`;
-      const agg = await tx.rateLimitHit.aggregate({
-        where: { userId, createdAt: { gte: since } },
-        _count: true,
-        _min: { createdAt: true },
-      });
-      if (agg._count >= limit) {
-        return { reserved: false, count: agg._count, oldest: agg._min.createdAt };
-      }
-      await tx.rateLimitHit.create({ data: { userId } });
-      // Expired rows are of no further use.
-      await tx.rateLimitHit.deleteMany({ where: { userId, createdAt: { lt: since } } });
-      return { reserved: true, count: agg._count + 1, oldest: agg._min.createdAt };
-    });
+    return prisma.$transaction(
+      async (tx) => {
+        // Serialise concurrent requests from one user for the length of this transaction.
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${userId}))`;
+        const agg = await tx.rateLimitHit.aggregate({
+          where: { userId, createdAt: { gte: since } },
+          _count: true,
+          _min: { createdAt: true },
+        });
+        if (agg._count >= limit) {
+          return { reserved: false, count: agg._count, oldest: agg._min.createdAt };
+        }
+        await tx.rateLimitHit.create({ data: { userId } });
+        // Expired rows are of no further use.
+        await tx.rateLimitHit.deleteMany({ where: { userId, createdAt: { lt: since } } });
+        return { reserved: true, count: agg._count + 1, oldest: agg._min.createdAt };
+      },
+      { maxWait: 10_000, timeout: 15_000 },
+    );
   },
   async create(data) {
     const g = await prisma.generation.create({
