@@ -1,5 +1,10 @@
 import { expect, type Browser, type BrowserContext, type Page } from "@playwright/test";
 
+/** Only Chromium can be granted clipboard permissions; Firefox copies fine without them. */
+export const clipboardPermissions = (browser: Browser): string[] =>
+  browser.browserType().name() === "chromium" ? ["clipboard-read", "clipboard-write"] : [];
+export const canReadClipboard = (browser: Browser) => browser.browserType().name() === "chromium";
+
 export const DRAFT = 'section[aria-label="Generated draft"]';
 
 export type Account = { name: string; email: string; password: string; role: "STAFF" | "MANAGER" };
@@ -53,7 +58,7 @@ export async function accountSession(
   browser: Browser,
   acct: Account,
 ): Promise<{ context: BrowserContext; page: Page }> {
-  const context = await browser.newContext({ permissions: ["clipboard-read", "clipboard-write"] });
+  const context = await browser.newContext({ permissions: clipboardPermissions(browser) });
   const page = await context.newPage();
   await page.goto("/login");
   await page.getByLabel("Email").fill(acct.email);
