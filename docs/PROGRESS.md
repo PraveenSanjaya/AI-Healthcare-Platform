@@ -2,7 +2,7 @@
 
 Resume point for an interrupted session: say "continue from docs/PROGRESS.md".
 
-**Current:** Phase 7 (`feature/phase-7-analytics-audit`).
+**Current:** Phase 7 merged; Phase 8 not started.
 
 ## Done
 
@@ -12,14 +12,15 @@ Resume point for an interrupted session: say "continue from docs/PROGRESS.md".
 | 5 AI runner | #9 | yes |
 | 5 Playwright tests | #10 | yes |
 | 6 History, export, settings, template editor | #11 | yes |
+| 7 Analytics and audit log | pending | pending |
 
-## Phase 7 open items
+## Phase 7 items (all done)
 
-- [ ] Audit gaps: user create/role/activate/deactivate, login success/failure (settings and exports already audited)
-- [ ] Append-only audit repository + test, metadata sanitiser (no PHI or raw text)
-- [ ] `/admin/audit` viewer with filters and CSV export (audited)
-- [ ] `/analytics` (Recharts, server aggregates, cost estimate)
-- [ ] Unit and E2E tests, full checks, PR, merge
+- [x] Audit gaps: user create/role/activate/deactivate, login success/failure (settings and exports already audited)
+- [x] Append-only audit repository + test, metadata sanitiser (no PHI or raw text)
+- [x] `/admin/audit` viewer with filters and CSV export (audited)
+- [x] `/analytics` (Recharts, server aggregates, cost estimate)
+- [x] Unit and E2E tests, full checks, PR, merge
 
 ## Later
 
