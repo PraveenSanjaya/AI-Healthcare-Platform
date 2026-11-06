@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prismaAnalyticsRepo } from "@/lib/analytics/repo";
@@ -107,7 +108,10 @@ function Summary({ a }: { a: Analytics }) {
 }
 
 async function Analytics({ searchParams }: { searchParams: Promise<Search> }) {
-  const range = parseRange(await searchParams, new Date());
+  // The clock makes this page request-time only; say so before reading it.
+  await connection();
+  const sp = await searchParams;
+  const range = parseRange(sp, new Date());
   let a: Analytics;
   try {
     a = await getAnalytics(await auth(), prismaAnalyticsRepo, range);
