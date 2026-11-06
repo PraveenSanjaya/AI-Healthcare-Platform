@@ -81,6 +81,17 @@ describe("detectPHI true positives", () => {
     expect(matches("Name: Saman", "name")).toEqual(["Saman"]);
     expect(matches("the patient Kasun Jayasuriya arrived", "name")).toEqual(["Kasun Jayasuriya"]);
   });
+  it("treats a title after a patient cue as part of the cue, not a second name", () => {
+    expect(matches("Patient Mr. Silva", "name")).toEqual(["Silva"]);
+    expect(matches("Patient Dr Kamal Perera called", "name")).toEqual(["Kamal Perera"]);
+    expect(matches("Patient name: Mrs. Fernando", "name")).toEqual(["Fernando"]);
+    expect(redactPHI("Patient Mr. Silva is here", { includeNames: true })).toBe(
+      "Patient Mr. [REDACTED-NAME] is here",
+    );
+  });
+  it("never reports a bare title as a name", () => {
+    expect(matches("Patient Mr. needs a visit", "name")).toEqual([]);
+  });
   it("reports correct offsets", () => {
     const text = "Mail a@b.lk now";
     const [f] = detectPHI(text);
