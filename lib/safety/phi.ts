@@ -40,7 +40,15 @@ const DATE_BODY =
 
 const NAME_WORD = "[A-Z][A-Za-z'’-]+";
 const NAME = String.raw`${NAME_WORD}(?:\s+${NAME_WORD}){0,2}`;
+/** A courtesy title is part of the cue, never a name. */
+const TITLE = String.raw`(?:(?:Mr|Mrs|Ms|Mx|Miss|Dr)\.?\s+)?`;
 const NAME_STOPWORDS = new Set([
+  "mr",
+  "mrs",
+  "ms",
+  "mx",
+  "miss",
+  "dr",
   "id",
   "number",
   "name",
@@ -115,14 +123,14 @@ const RULES: Rule[] = [
   {
     type: "name",
     re: new RegExp(
-      String.raw`\b(?:[Pp]atient(?:\s+[Nn]ame)?|[Nn]ame|[Ff]ull\s+[Nn]ame)\s*(?::|\bis\b|\bnamed\b)\s*(${NAME})`,
+      String.raw`\b(?:[Pp]atient(?:\s+[Nn]ame)?|[Nn]ame|[Ff]ull\s+[Nn]ame)\s*(?::|\bis\b|\bnamed\b)\s*${TITLE}(${NAME})`,
       "g",
     ),
     group: 1,
   },
   {
     type: "name",
-    re: new RegExp(String.raw`\b[Pp]atient\s+(${NAME_WORD}(?:\s+${NAME_WORD})?)`, "g"),
+    re: new RegExp(String.raw`\b[Pp]atient\s+${TITLE}(${NAME_WORD}(?:\s+${NAME_WORD})?)`, "g"),
     group: 1,
   },
 ];

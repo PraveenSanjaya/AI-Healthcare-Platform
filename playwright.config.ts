@@ -17,10 +17,13 @@ export default defineConfig({
   globalSetup: "./tests/e2e/global-setup.ts",
   use: {
     baseURL,
-    ...devices["Desktop Chrome"],
     screenshot: "only-on-failure",
     trace: "off", // traces would record the typed password
   },
+  projects: [
+    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    { name: "firefox", use: { ...devices["Desktop Firefox"] } },
+  ],
   webServer: {
     command: `npx next dev -p ${PORT}`,
     url: `${baseURL}/login`,

@@ -50,7 +50,7 @@ export function UserRow({ id, name, email, role, active, isSelf }: Props) {
           {active ? "Deactivate" : "Activate"}
         </button>
         {error && (
-          <span role="alert" className="ml-2 text-sm text-red-600">
+          <span role="alert" className="ml-2 text-sm text-red-600 dark:text-red-400">
             {error}
           </span>
         )}

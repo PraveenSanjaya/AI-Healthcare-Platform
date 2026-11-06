@@ -183,7 +183,9 @@ export function TemplateEditor({
         </div>
         <fieldset className="text-sm">
           <legend className="font-medium">Roles that can run it</legend>
-          <p className="text-gray-600">Managers and admins can always run every template.</p>
+          <p className="text-muted-foreground">
+            Managers and admins can always run every template.
+          </p>
           <div className="mt-1 flex gap-4">
             {ROLES.map((r) => (
               <label key={r} className="flex items-center gap-1">
@@ -224,7 +226,7 @@ export function TemplateEditor({
             />
           </label>
         ))}
-        <p className="text-sm text-gray-600">
+        <p className="text-muted-foreground text-sm">
           Use {"{{variable_name}}"} in the text above. Every placeholder needs a variable below, and
           every variable must be used.
         </p>
@@ -360,7 +362,7 @@ export function TemplateEditor({
         {issues.length > 0 && (
           <div
             role="status"
-            className="rounded-md border border-amber-400 bg-amber-50 p-3 text-sm text-amber-900"
+            className="rounded-md border border-amber-400 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100"
           >
             <p className="font-medium">Fix before saving:</p>
             <ul className="ml-5 list-disc">
@@ -373,7 +375,7 @@ export function TemplateEditor({
         {result && (
           <div
             role={result.ok ? "status" : "alert"}
-            className={`rounded-md border p-3 text-sm ${result.ok ? "border-green-400 bg-green-50 text-green-900" : "border-red-300 bg-red-50 text-red-800"}`}
+            className={`rounded-md border p-3 text-sm ${result.ok ? "border-green-400 bg-green-50 text-green-900 dark:border-green-700 dark:bg-green-950 dark:text-green-100" : "border-red-300 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200"}`}
           >
             <ul>
               {result.messages.map((m) => (
@@ -385,7 +387,7 @@ export function TemplateEditor({
         <button
           type="submit"
           disabled={pending || issues.length > 0}
-          className="rounded-md bg-black px-3 py-2 text-white disabled:opacity-50"
+          className="bg-primary text-primary-foreground rounded-md px-3 py-2 disabled:opacity-50"
         >
           {pending ? "Saving…" : slug ? "Save changes" : "Create template"}
         </button>
@@ -393,12 +395,12 @@ export function TemplateEditor({
 
       <aside className="space-y-2 lg:sticky lg:top-4 lg:self-start" aria-label="Live preview">
         <h2 className="text-lg font-semibold">Live preview</h2>
-        <p className="text-sm text-gray-600">
+        <p className="text-muted-foreground text-sm">
           The message the model would get, using sample values and your clinic profile.
         </p>
         <pre
           data-testid="template-preview"
-          className={`max-h-[70vh] overflow-auto rounded-lg border p-3 text-sm whitespace-pre-wrap ${preview.ok ? "" : "border-red-300 bg-red-50 text-red-800"}`}
+          className={`max-h-[70vh] overflow-auto rounded-lg border p-3 text-sm whitespace-pre-wrap ${preview.ok ? "" : "border-red-300 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200"}`}
         >
           {preview.text}
         </pre>

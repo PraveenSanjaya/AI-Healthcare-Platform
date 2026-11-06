@@ -22,7 +22,7 @@ export function FieldPhiNotice({ value, findings }: { value: string; findings: P
   if (findings.length === 0) return null;
   const segments = highlightSegments(value, findings);
   return (
-    <div className="rounded-md border border-red-300 bg-red-50 p-2 text-sm text-red-900">
+    <div className="rounded-md border border-red-300 bg-red-50 p-2 text-sm text-red-900 dark:border-red-800 dark:bg-red-950 dark:text-red-100">
       <p className="font-medium">
         Possible personal information:{" "}
         {[...new Set(findings.map((f) => phiLabel(f.type)))].join(", ")}
@@ -32,7 +32,7 @@ export function FieldPhiNotice({ value, findings }: { value: string; findings: P
           s.type ? (
             <mark
               key={i}
-              className="rounded bg-red-200 px-0.5 text-red-950 underline decoration-wavy"
+              className="rounded bg-red-200 px-0.5 text-red-950 underline decoration-wavy dark:bg-red-900 dark:text-red-100"
             >
               {s.text}
             </mark>
@@ -62,21 +62,27 @@ export function PhiSummary({
   if (findings.length === 0) return null;
   const fields = new Set(findings.map((f) => f.field)).size;
   return (
-    <div role="status" className="space-y-3 rounded-md border border-red-300 bg-red-50 p-3 text-sm">
-      <p className="font-medium text-red-900">
+    <div
+      role="status"
+      className="space-y-3 rounded-md border border-red-300 bg-red-50 p-3 text-sm dark:border-red-800 dark:bg-red-950"
+    >
+      <p className="font-medium text-red-900 dark:text-red-100">
         {findings.length} possible personal detail{findings.length === 1 ? "" : "s"} in {fields}{" "}
         field{fields === 1 ? "" : "s"}. Generate is blocked until they are removed.
       </p>
       <button
         type="button"
         onClick={onRedactAll}
-        className="rounded-md border border-red-400 bg-white px-3 py-1.5 font-medium text-red-900"
+        className="bg-background rounded-md border border-red-400 px-3 py-1.5 font-medium text-red-900 dark:border-red-700 dark:text-red-100"
       >
         Redact all
       </button>
       {isAdmin && (
         <div className="space-y-1">
-          <label htmlFor="phi-override-reason" className="block font-medium text-red-900">
+          <label
+            htmlFor="phi-override-reason"
+            className="block font-medium text-red-900 dark:text-red-100"
+          >
             Administrator override: reason (at least 10 characters, logged)
           </label>
           <textarea

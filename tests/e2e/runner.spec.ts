@@ -1,9 +1,18 @@
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 import { ADMIN_STATE } from "./global-setup";
-import { DRAFT, deactivateStaff, ensureStaffActive, fillSpotlight, staffSession } from "./helpers";
+import {
+  DRAFT,
+  canReadClipboard,
+  clipboardPermissions,
+  deactivateStaff,
+  ensureStaffActive,
+  fillSpotlight,
+  staffSession,
+} from "./helpers";
 
 let context: BrowserContext;
 let page: Page;
+let readClipboard = false;
 
 const generate = () => page.getByRole("button", { name: /^Generate/ });
 const copy = () => page.getByRole("button", { name: "Copy", exact: true });
@@ -18,9 +27,10 @@ async function waitForDraftReady() {
 test.describe.configure({ mode: "serial" });
 
 test.beforeAll(async ({ browser }) => {
+  readClipboard = canReadClipboard(browser);
   context = await browser.newContext({
     storageState: ADMIN_STATE,
-    permissions: ["clipboard-read", "clipboard-write"],
+    permissions: clipboardPermissions(browser),
   });
   page = await context.newPage();
 });
@@ -90,7 +100,7 @@ test("6. Ticking review enables Copy, which copies the draft", async () => {
   await expect(copy()).toBeEnabled();
   await copy().click();
   await expect(page.getByText("Copied", { exact: true })).toBeVisible();
-  expect(await clipboard()).toMatch(/^# Plain-Language Test Result Explainer/);
+  if (readClipboard) expect(await clipboard()).toMatch(/^# Plain-Language Test Result Explainer/);
 });
 
 test("7. Refining produces a new output and clears the review tick", async () => {
@@ -128,7 +138,7 @@ test("9. A2 (internal) can be copied without a review tick", async () => {
   await expect(copy()).toBeEnabled();
   await copy().click();
   await expect(page.getByText("Copied", { exact: true })).toBeVisible();
-  expect(await clipboard()).toMatch(/^# Coordination Meeting Minutes/);
+  if (readClipboard) expect(await clipboard()).toMatch(/^# Coordination Meeting Minutes/);
 });
 
 test("10. A STAFF user can run a template but is blocked from /admin/users", async ({

@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: clinic
+          POSTGRES_PASSWORD: clinic
+          POSTGRES_DB: clinicassist
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U clinic -d clinicassist"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      HUSKY: "0"
+      # Throwaway values for this job only; nothing here is a real secret.
+      DATABASE_URL: postgresql://clinic:clinic@localhost:5432/clinicassist
+      AUTH_SECRET: ci-only-secret-not-used-anywhere-else-0123456789
+      AUTH_TRUST_HOST: "true"
+      SEED_ADMIN_EMAIL: admin@clinic.local
+      SEED_ADMIN_PASSWORD: Ci-Admin-Passw0rd-ok
+      LLM_PROVIDER: mock
+      ANTHROPIC_API_KEY: ""
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run format:check
+      - run: npx prisma migrate deploy
+      - run: npm run db:seed
+      - name: Unit tests with coverage (80% gate for lib/safety and lib/ai)
+        run: npm run test:coverage
+      - name: Build (mock provider)
+        run: npm run build
+      - name: Install browsers
+        run: npx playwright install --with-deps chromium firefox
+      - name: End-to-end tests (Chromium and Firefox)
+        run: npm run test:e2e
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7

@@ -42,8 +42,8 @@ async function New() {
 
 export default function NewTemplatePage() {
   return (
-    <main className="mx-auto max-w-6xl space-y-4 p-6">
-      <p className="text-sm text-gray-600">
+    <main id="main" tabIndex={-1} className="mx-auto max-w-6xl space-y-4 p-6">
+      <p className="text-muted-foreground text-sm">
         <Link href="/admin/templates" className="underline">
           Manage templates
         </Link>{" "}

@@ -18,14 +18,14 @@ const nf = new Intl.NumberFormat("en-US");
 function Tile({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
     <div className="rounded-lg border p-4">
-      <dt className="text-sm text-gray-600">{label}</dt>
+      <dt className="text-muted-foreground text-sm">{label}</dt>
       <dd
         className="mt-1 text-2xl font-semibold"
         data-testid={`tile-${label.toLowerCase().replace(/\W+/g, "-")}`}
       >
         {value}
       </dd>
-      {note && <p className="mt-1 text-xs text-gray-600">{note}</p>}
+      {note && <dd className="text-muted-foreground mt-1 text-xs">{note}</dd>}
     </div>
   );
 }
@@ -95,7 +95,7 @@ function Summary({ a }: { a: Analytics }) {
               </tbody>
             </table>
           </div>
-          <p className="text-xs text-gray-600">
+          <p className="text-muted-foreground text-xs">
             Estimates use the price table in <code>lib/analytics/pricing.ts</code>, which can be out
             of date. Token figures cover first drafts only, not refinements.
             {a.cost.unpricedModels.length > 0 &&
@@ -145,17 +145,17 @@ async function Analytics({ searchParams }: { searchParams: Promise<Search> }) {
             className="mt-1 block rounded-md border px-3 py-2"
           />
         </label>
-        <button className="rounded-md bg-black px-3 py-2 text-white">Apply</button>
+        <button className="bg-primary text-primary-foreground rounded-md px-3 py-2">Apply</button>
         <Link href="/analytics" className="px-2 py-2 text-sm underline">
           Last 30 days
         </Link>
-        <p className="ml-auto text-sm text-gray-600" data-testid="analytics-range">
+        <p className="text-muted-foreground ml-auto text-sm" data-testid="analytics-range">
           {range.from} to {range.to} ({range.days} day{range.days === 1 ? "" : "s"})
         </p>
       </form>
       {a.total === 0 && a.phiBlocked === 0 && a.phiOverrides === 0 ? (
         <p
-          className="rounded-lg border p-8 text-center text-gray-600"
+          className="text-muted-foreground rounded-lg border p-8 text-center"
           data-testid="analytics-empty"
         >
           No activity in this period. Run a template, or widen the date range.
@@ -169,7 +169,7 @@ async function Analytics({ searchParams }: { searchParams: Promise<Search> }) {
 
 export default function AnalyticsPage({ searchParams }: { searchParams: Promise<Search> }) {
   return (
-    <main className="mx-auto max-w-6xl space-y-6 p-6">
+    <main id="main" tabIndex={-1} className="mx-auto max-w-6xl space-y-6 p-6">
       <h1 className="text-2xl font-semibold">Analytics</h1>
       <Suspense fallback={<p>Loading…</p>}>
         <Analytics searchParams={searchParams} />

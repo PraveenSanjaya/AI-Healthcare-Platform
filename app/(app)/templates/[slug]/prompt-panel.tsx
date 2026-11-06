@@ -37,19 +37,19 @@ export function PromptPanel({
           <>
             <section>
               <h3 className="font-semibold">System prompt</h3>
-              <pre className="mt-1 overflow-x-auto rounded bg-gray-50 p-3 whitespace-pre-wrap">
+              <pre className="bg-muted mt-1 overflow-x-auto rounded p-3 whitespace-pre-wrap">
                 {result.system}
               </pre>
             </section>
             <section>
               <h3 className="font-semibold">Message</h3>
-              <pre className="mt-1 overflow-x-auto rounded bg-gray-50 p-3 whitespace-pre-wrap">
+              <pre className="bg-muted mt-1 overflow-x-auto rounded p-3 whitespace-pre-wrap">
                 {result.user}
               </pre>
             </section>
           </>
         ) : (
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             {result.message} The prompt appears once the form is complete.
           </p>
         )}

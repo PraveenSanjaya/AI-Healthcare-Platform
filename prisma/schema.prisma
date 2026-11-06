@@ -167,3 +167,13 @@ model AuditLog {
   @@index([action])
   @@index([createdAt])
 }
+
+/// One row per accepted generate/refine request, used for the hourly rate limit.
+/// userId is deliberately not a relation so the limiter never blocks deleting a user.
+model RateLimitHit {
+  id        String   @id @default(cuid())
+  userId    String
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}

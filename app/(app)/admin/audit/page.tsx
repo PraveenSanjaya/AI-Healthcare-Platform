@@ -83,7 +83,7 @@ async function Audit({ searchParams }: { searchParams: Promise<Search> }) {
             className="mt-1 block rounded-md border px-3 py-2"
           />
         </label>
-        <button className="rounded-md bg-black px-3 py-2 text-white">Filter</button>
+        <button className="bg-primary text-primary-foreground rounded-md px-3 py-2">Filter</button>
         <Link href="/admin/audit" className="px-2 py-2 text-sm underline">
           Clear
         </Link>
@@ -95,11 +95,11 @@ async function Audit({ searchParams }: { searchParams: Promise<Search> }) {
           Download CSV
         </a>
       </form>
-      <p className="text-sm text-gray-600" data-testid="audit-count">
+      <p className="text-muted-foreground text-sm" data-testid="audit-count">
         {r.total} entr{r.total === 1 ? "y" : "ies"}
       </p>
       {r.rows.length === 0 ? (
-        <p className="rounded-lg border p-6 text-center text-gray-600">
+        <p className="text-muted-foreground rounded-lg border p-6 text-center">
           No audit entries match these filters.
         </p>
       ) : (
@@ -129,12 +129,12 @@ async function Audit({ searchParams }: { searchParams: Promise<Search> }) {
                     {row.metadata ? (
                       <details>
                         <summary className="cursor-pointer">View</summary>
-                        <pre className="mt-1 max-w-md overflow-x-auto rounded bg-gray-50 p-2 text-xs whitespace-pre-wrap">
+                        <pre className="bg-muted mt-1 max-w-md overflow-x-auto rounded p-2 text-xs whitespace-pre-wrap">
                           {JSON.stringify(row.metadata, null, 2)}
                         </pre>
                       </details>
                     ) : (
-                      <span className="text-gray-500">-</span>
+                      <span className="text-muted-foreground">-</span>
                     )}
                   </td>
                 </tr>
@@ -172,9 +172,9 @@ async function Audit({ searchParams }: { searchParams: Promise<Search> }) {
 
 export default function AuditPage({ searchParams }: { searchParams: Promise<Search> }) {
   return (
-    <main className="mx-auto max-w-6xl space-y-4 p-6">
+    <main id="main" tabIndex={-1} className="mx-auto max-w-6xl space-y-4 p-6">
       <h1 className="text-2xl font-semibold">Audit log</h1>
-      <p className="text-sm text-gray-600">
+      <p className="text-muted-foreground text-sm">
         Append-only record of who did what. It holds ids, roles and counts, never draft text or
         personal details.
       </p>

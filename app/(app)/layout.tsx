@@ -7,7 +7,10 @@ async function Nav() {
   const session = await auth();
   const user = session?.user;
   return (
-    <nav aria-label="Main" className="flex items-center gap-4 border-b px-6 py-3 text-sm">
+    <nav
+      aria-label="Main"
+      className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b px-4 py-3 text-sm sm:px-6"
+    >
       <Link href="/dashboard" className="font-semibold">
         ClinicAssist
       </Link>
@@ -18,7 +21,7 @@ async function Nav() {
       {user && hasRole(user.role, "ADMIN") && <Link href="/admin/templates">Manage templates</Link>}
       {user && hasRole(user.role, "ADMIN") && <Link href="/admin/users">Users</Link>}
       {user && hasRole(user.role, "ADMIN") && <Link href="/admin/audit">Audit log</Link>}
-      <span className="ml-auto text-gray-600">{user?.email}</span>
+      <span className="text-muted-foreground max-w-full truncate sm:ml-auto">{user?.email}</span>
       <form
         action={async () => {
           "use server";

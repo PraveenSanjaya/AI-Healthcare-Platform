@@ -27,14 +27,14 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
   return (
     <article className="space-y-6">
       <header className="space-y-1">
-        <p className="text-sm text-gray-600">
+        <p className="text-muted-foreground text-sm">
           <Link href="/history" className="underline">
             History
           </Link>{" "}
           / {d.templateTitle}
         </p>
         <h1 className="text-2xl font-semibold">{d.templateTitle}</h1>
-        <p className="text-sm text-gray-600">
+        <p className="text-muted-foreground text-sm">
           {d.userName} · {fmt(d.createdAt)} · template version {d.templateVersion} · {d.model} ·{" "}
           {d.reviewed && d.reviewedAt ? `Reviewed ${fmt(d.reviewedAt)}` : "Not reviewed"}
         </p>
@@ -42,7 +42,7 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
           <p>
             <Link
               href={`/templates/${d.templateSlug}?reopen=${d.id}`}
-              className="inline-block rounded-md bg-black px-3 py-2 text-white"
+              className="bg-primary text-primary-foreground inline-block rounded-md px-3 py-2"
             >
               Reopen in the runner
             </Link>
@@ -64,14 +64,16 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
             </a>
           ))
         ) : (
-          <span className="text-gray-600">
+          <span className="text-muted-foreground">
             Patient-facing drafts can be exported after the author has reviewed them.
           </span>
         )}
       </section>
 
       <section className="space-y-2">
-        <h2 className="text-sm font-semibold tracking-wide text-gray-600 uppercase">Inputs</h2>
+        <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
+          Inputs
+        </h2>
         <dl className="divide-y rounded-lg border text-sm">
           {Object.entries(d.inputs).map(([k, v]) => (
             <div key={k} className="p-3">
@@ -83,8 +85,10 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
       </section>
 
       <section className="space-y-2">
-        <h2 className="text-sm font-semibold tracking-wide text-gray-600 uppercase">First draft</h2>
-        <p className="inline-block rounded bg-amber-100 px-2 py-1 text-sm font-medium text-amber-900">
+        <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
+          First draft
+        </h2>
+        <p className="inline-block rounded bg-amber-100 px-2 py-1 text-sm font-medium text-amber-900 dark:bg-amber-900 dark:text-amber-100">
           AI draft — review before use
         </p>
         <div className={md}>
@@ -94,10 +98,10 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
 
       {d.refinements.map((r, i) => (
         <section key={r.id} className="space-y-2">
-          <h2 className="text-sm font-semibold tracking-wide text-gray-600 uppercase">
+          <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
             Refinement {i + 1}: {r.instruction}
           </h2>
-          <p className="text-xs text-gray-600">{fmt(r.createdAt)}</p>
+          <p className="text-muted-foreground text-xs">{fmt(r.createdAt)}</p>
           <div className={md}>
             <Markdown>{r.output}</Markdown>
           </div>
@@ -109,7 +113,7 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
 
 export default function HistoryDetailPage({ params }: { params: Promise<{ id: string }> }) {
   return (
-    <main className="mx-auto max-w-3xl p-6">
+    <main id="main" tabIndex={-1} className="mx-auto max-w-3xl p-6">
       <Suspense fallback={<p>Loading…</p>}>
         <Detail params={params} />
       </Suspense>

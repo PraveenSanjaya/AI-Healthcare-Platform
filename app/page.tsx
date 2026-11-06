@@ -2,7 +2,11 @@ import { ShieldCheck } from "lucide-react";
 
 export default function Home() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center gap-6 px-4 py-16">
+    <main
+      id="main"
+      tabIndex={-1}
+      className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center gap-6 px-4 py-16"
+    >
       <div className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
         <ShieldCheck className="size-4" aria-hidden="true" />
         Non-clinical assistant for medical centres

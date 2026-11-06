@@ -18,7 +18,7 @@ export function DraftViewer({
   const status = lengthStatus(text, { maxWords, maxChars });
   return (
     <section aria-label="Generated draft" className="space-y-2">
-      <p className="inline-block rounded bg-amber-100 px-2 py-1 text-sm font-medium text-amber-900">
+      <p className="inline-block rounded bg-amber-100 px-2 py-1 text-sm font-medium text-amber-900 dark:bg-amber-900 dark:text-amber-100">
         AI draft — review before use
       </p>
       <div
@@ -29,10 +29,12 @@ export function DraftViewer({
         {text ? (
           <Markdown>{text}</Markdown>
         ) : (
-          <p className="text-gray-600">{streaming ? "Writing…" : "Your draft will appear here."}</p>
+          <p className="text-muted-foreground">
+            {streaming ? "Writing…" : "Your draft will appear here."}
+          </p>
         )}
       </div>
-      <p className="text-sm text-gray-600">
+      <p className="text-muted-foreground text-sm">
         {status.words} words · {status.chars} characters
         {maxWords ? ` · limit ${maxWords} words` : ""}
         {maxChars ? ` · limit ${maxChars} characters` : ""}
@@ -40,7 +42,7 @@ export function DraftViewer({
       {status.warning && (
         <p
           role="status"
-          className="rounded-md border border-amber-400 bg-amber-50 p-2 text-sm text-amber-900"
+          className="rounded-md border border-amber-400 bg-amber-50 p-2 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100"
         >
           Over the limit: {status.warning}. Shorten it before use.
         </p>

@@ -19,7 +19,15 @@ export { AUDIT };
 export type { AuditEntry };
 
 export type GenerationRepo = {
-  usageSince(userId: string, since: Date): Promise<{ count: number; oldest: Date | null }>;
+  /**
+   * Atomically count the user's uses since `since` and, only if fewer than `limit`, record one
+   * more. Concurrent calls for one user are serialised, so the limit cannot be exceeded.
+   */
+  reserve(
+    userId: string,
+    since: Date,
+    limit: number,
+  ): Promise<{ reserved: boolean; count: number; oldest: Date | null }>;
   create(data: {
     userId: string;
     templateVersionId: string;
@@ -156,13 +164,11 @@ export async function gate(
     return { ok: false, response: json({ error: "TEMPLATE_UNAVAILABLE" }, 409) };
   }
   const now = deps.now();
-  const usage = await deps.generations.usageSince(user.id, rateLimitWindowStart(now));
-  const limit = checkRateLimit({
-    count: usage.count,
-    oldest: usage.oldest,
-    limit: rateLimitPerHour(deps.env),
-    now,
-  });
+  const max = rateLimitPerHour(deps.env);
+  const usage = await deps.generations.reserve(user.id, rateLimitWindowStart(now), max);
+  const limit = usage.reserved
+    ? ({ allowed: true } as const)
+    : checkRateLimit({ count: Math.max(usage.count, max), oldest: usage.oldest, limit: max, now });
   if (!limit.allowed) {
     return {
       ok: false,

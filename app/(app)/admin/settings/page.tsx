@@ -18,7 +18,7 @@ async function Settings() {
   }
   return (
     <>
-      <p className="text-sm text-gray-600">
+      <p className="text-muted-foreground text-sm">
         These details are filled into templates and the system prompt for every draft.
         {data.canEditAll
           ? ""
@@ -31,7 +31,7 @@ async function Settings() {
 
 export default function SettingsPage() {
   return (
-    <main className="mx-auto max-w-3xl space-y-4 p-6">
+    <main id="main" tabIndex={-1} className="mx-auto max-w-3xl space-y-4 p-6">
       <h1 className="text-2xl font-semibold">Clinic settings</h1>
       <Suspense fallback={<p>Loading…</p>}>
         <Settings />

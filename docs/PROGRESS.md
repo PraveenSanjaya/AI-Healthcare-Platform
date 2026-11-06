@@ -2,7 +2,7 @@
 
 Resume point for an interrupted session: say "continue from docs/PROGRESS.md".
 
-**Current:** Phase 7 merged; Phase 8 not started.
+**Current:** Phase 8 merged (PR #13); v1.0.0 release is the last step.
 
 ## Done
 
@@ -12,19 +12,21 @@ Resume point for an interrupted session: say "continue from docs/PROGRESS.md".
 | 5 AI runner | #9 | yes |
 | 5 Playwright tests | #10 | yes |
 | 6 History, export, settings, template editor | #11 | yes |
-| 7 Analytics and audit log | pending | pending |
+| 7 Analytics and audit log | #12 | yes |
+| 8 Hardening and delivery | #13 | yes |
 
-## Phase 7 items (all done)
+## Phase 8 items
 
-- [x] Audit gaps: user create/role/activate/deactivate, login success/failure (settings and exports already audited)
-- [x] Append-only audit repository + test, metadata sanitiser (no PHI or raw text)
-- [x] `/admin/audit` viewer with filters and CSV export (audited)
-- [x] `/analytics` (Recharts, server aggregates, cost estimate)
-- [x] Unit and E2E tests, full checks, PR, merge
-
-## Later
-
-- Phase 8: hardening, CI, docs, v1.0.0 release.
+- [x] Atomic rate limit + concurrency test
+- [x] PHI detector: "Patient Mr. Silva" is one name finding
+- [x] Security headers, body size limits, uniform errors
+- [x] Error boundaries, not-found, loading, toasts, dark mode, 375px layout
+- [x] Accessibility (axe, light and dark) and main-flow e2e on Chromium and Firefox
+- [x] CI workflow (`.github/workflows/ci.yml`)
+- [x] Docs: README, ARCHITECTURE, SAFETY, USER_GUIDE, CHANGELOG, PLAN, DECISIONS
+- [x] Full checks, PR, green CI, merge
+- [x] Optional real-AI check: skipped, no `ANTHROPIC_API_KEY` in `.env`
+- [ ] Tag v1.0.0 and GitHub release
 
 ## Run rules
 

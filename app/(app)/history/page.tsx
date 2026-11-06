@@ -36,7 +36,7 @@ async function History({ searchParams }: { searchParams: Promise<Search> }) {
   const showUser = result.scope === "all";
   return (
     <>
-      <p className="text-sm text-gray-600" data-testid="history-scope">
+      <p className="text-muted-foreground text-sm" data-testid="history-scope">
         {result.scope === "all" ? "All users' drafts" : "Your drafts"} · {result.total} found
       </p>
       <form method="get" className="flex flex-wrap items-end gap-3" role="search">
@@ -85,13 +85,13 @@ async function History({ searchParams }: { searchParams: Promise<Search> }) {
             <option value="no">Not reviewed</option>
           </select>
         </label>
-        <button className="rounded-md bg-black px-3 py-2 text-white">Filter</button>
+        <button className="bg-primary text-primary-foreground rounded-md px-3 py-2">Filter</button>
         <Link href="/history" className="px-2 py-2 text-sm underline">
           Clear
         </Link>
       </form>
       {result.rows.length === 0 ? (
-        <p className="rounded-lg border p-6 text-center text-gray-600">
+        <p className="text-muted-foreground rounded-lg border p-6 text-center">
           No drafts match. Run a template to create one.
         </p>
       ) : (
@@ -116,7 +116,7 @@ async function History({ searchParams }: { searchParams: Promise<Search> }) {
                   <td className="p-2">
                     {r.templateTitle}
                     {r.audience === "PATIENT_FACING" && (
-                      <span className="ml-2 rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-900">
+                      <span className="ml-2 rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-900 dark:bg-blue-900 dark:text-blue-100">
                         Patient-facing
                       </span>
                     )}
@@ -157,7 +157,7 @@ async function History({ searchParams }: { searchParams: Promise<Search> }) {
 
 export default function HistoryPage({ searchParams }: { searchParams: Promise<Search> }) {
   return (
-    <main className="mx-auto max-w-5xl space-y-4 p-6">
+    <main id="main" tabIndex={-1} className="mx-auto max-w-5xl space-y-4 p-6">
       <h1 className="text-2xl font-semibold">History</h1>
       <Suspense fallback={<p>Loading…</p>}>
         <History searchParams={searchParams} />

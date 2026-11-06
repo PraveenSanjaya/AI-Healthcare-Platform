@@ -190,3 +190,34 @@ Built from the clinic profile, then the template's role. Must include:
 - CSV export of the filtered audit log (ADMIN, itself audit logged).
 
 **Tests:** unit tests for aggregates and audit coverage; E2E: manager sees analytics, staff is blocked; an action shows up in the audit viewer.
+
+## Phase 8 — Hardening & delivery
+
+- Rate limit: make it atomic (transaction or a counter row) so concurrent requests can't exceed it; add a concurrency test.
+- PHI detector: fix the "Patient Mr. Silva" case so the cue word and title aren't treated as a separate name (one [REDACTED-NAME]); add tests.
+- Security: security headers (CSP, X-Frame-Options, Referrer-Policy, Permissions-Policy, HSTS in production), request body size limits on all inputs and /api/generate, consistent error responses without stack traces.
+- UX: error boundaries (app/error.tsx, global-error), not-found pages, loading states for every async action, toast feedback, responsive at 375px width, light and dark mode.
+- Accessibility (WCAG 2.1 AA): labels, keyboard navigation, focus states, contrast, aria-live for streaming output; add @axe-core/playwright checks on the main pages with zero serious/critical violations.
+- E2E main flow: login -> pick template -> PHI blocked -> redact -> generate -> review -> export. Run the suite on Chromium and Firefox.
+- CI: .github/workflows/ci.yml on push and PR: install, lint, typecheck, format check, unit tests with coverage, next build (mock provider). Add a Postgres service and run e2e in CI too if feasible; otherwise skip e2e in CI and note why. The CI run must be green on the Phase 8 PR before merging.
+- Optional real-AI check: only if ANTHROPIC_API_KEY is set in .env, run one generation with LLM_PROVIDER=anthropic and confirm it streams; otherwise skip and note it.
+- Docs: README (what the app is, features, screenshots placeholder, setup on Windows (prisma dev) and docker-compose, env vars, roles, scripts, how to add a template, safety design, testing); docs/ARCHITECTURE.md with Mermaid diagrams (system overview, /api/generate request flow, data model); docs/SAFETY.md final; docs/USER_GUIDE.md (Staff, Manager, Admin); CHANGELOG.md for v1.0.0; docs/PLAN.md all phases ticked; DECISIONS.md complete.
+- Definition of done (verify each, list evidence in the final report):
+  1. Fresh setup steps in README work.
+  2. 24 templates seeded, browsable, searchable, runnable.
+  3. Email, phone, Sri Lankan NIC and "DOB:" are blocked before the AI; redact works.
+  4. Works fully with LLM_PROVIDER=mock and no key.
+  5. Patient-facing output can't be copied or exported before review.
+  6. STAFF can't reach admin pages or APIs (tests).
+  7. Generations, PHI blocks, overrides, template edits, exports, user and settings changes are in the audit log.
+  8. lint, typecheck, unit tests, build and e2e all pass.
+  9. Coverage >= 80% for lib/safety and lib/ai.
+  10. README covers setup, roles, safety design and adding a template.
+
+## Release
+
+After the Phase 8 PR is merged, on an up-to-date main: `git tag -a v1.0.0 -m "ClinicAssist v1.0.0"`, push the tag, then `gh release create v1.0.0` with notes from CHANGELOG.md.
+
+## Final report (then stop)
+
+Table of phases 5-8 (PR numbers, merged, commit counts); definition-of-done checklist with evidence; total commits, test counts, coverage; known limitations and skipped items; exact commands to run the app from scratch.

@@ -2,6 +2,7 @@ import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 import { ADMIN_STATE } from "./global-setup";
 import {
   DRAFT,
+  clipboardPermissions,
   deactivateStaff,
   ensureStaffActive,
   fillSpotlight,
@@ -9,7 +10,7 @@ import {
   staffSession,
 } from "./helpers";
 
-const NOT_FOUND = "This page could not be found";
+const NOT_FOUND = "That page does not exist, or you do not have access to it.";
 const SANDBOX = "e2e-sandbox-template";
 
 let adminContext: BrowserContext;
@@ -22,7 +23,7 @@ test.describe.configure({ mode: "serial" });
 test.beforeAll(async ({ browser }) => {
   adminContext = await browser.newContext({
     storageState: ADMIN_STATE,
-    permissions: ["clipboard-read", "clipboard-write"],
+    permissions: clipboardPermissions(browser),
   });
   admin = await adminContext.newPage();
   await ensureStaffActive(admin);

@@ -23,7 +23,7 @@ function ChartCard({
     <section className="space-y-2 rounded-lg border p-4" aria-label={title}>
       <h2 className="text-lg font-semibold">{title}</h2>
       {empty ? (
-        <p className="py-8 text-center text-gray-600">No data in this period.</p>
+        <p className="text-muted-foreground py-8 text-center">No data in this period.</p>
       ) : (
         <div className="text-blue-700 dark:text-blue-400" style={{ height }}>
           <ResponsiveContainer width="100%" height="100%">

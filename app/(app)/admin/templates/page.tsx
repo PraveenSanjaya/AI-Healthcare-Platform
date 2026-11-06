@@ -16,7 +16,7 @@ function Table({ title, rows }: { title: string; rows: AdminTemplateRow[] }) {
         {title} ({rows.length})
       </h2>
       {rows.length === 0 ? (
-        <p className="text-gray-600">None.</p>
+        <p className="text-muted-foreground">None.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -75,10 +75,13 @@ async function List() {
 
 export default function AdminTemplatesPage() {
   return (
-    <main className="mx-auto max-w-5xl space-y-6 p-6">
+    <main id="main" tabIndex={-1} className="mx-auto max-w-5xl space-y-6 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Manage templates</h1>
-        <Link href="/admin/templates/new" className="rounded-md bg-black px-3 py-2 text-white">
+        <Link
+          href="/admin/templates/new"
+          className="bg-primary text-primary-foreground rounded-md px-3 py-2"
+        >
           New template
         </Link>
       </div>

@@ -26,14 +26,14 @@ function TemplateCard({ t }: { t: LibraryItem }) {
           </Link>
         </h3>
         {t.audience === "PATIENT_FACING" && (
-          <span className="rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-900">
+          <span className="rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-900 dark:bg-blue-900 dark:text-blue-100">
             Patient-facing
           </span>
         )}
       </div>
-      <p className="text-xs text-gray-600">{t.category.name}</p>
+      <p className="text-muted-foreground text-xs">{t.category.name}</p>
       <p className="text-sm">{t.description}</p>
-      {t.current && <p className="text-xs text-gray-600">Act as {t.current.role}</p>}
+      {t.current && <p className="text-muted-foreground text-xs">Act as {t.current.role}</p>}
       <div className="mt-auto pt-2">
         <FavoriteButton slug={t.slug} favorite={t.favorite} />
       </div>
@@ -103,12 +103,12 @@ async function Library({ searchParams }: { searchParams: Promise<Search> }) {
           <input type="checkbox" name="fav" value="1" defaultChecked={sp.fav === "1"} />
           Favorites only
         </label>
-        <button className="rounded-md bg-black px-3 py-2 text-white">Apply</button>
+        <button className="bg-primary text-primary-foreground rounded-md px-3 py-2">Apply</button>
         <Link href="/templates" className="pb-2 text-sm underline">
           Reset
         </Link>
       </form>
-      <p className="text-sm text-gray-600" aria-live="polite">
+      <p className="text-muted-foreground text-sm" aria-live="polite">
         {filtered.length} template{filtered.length === 1 ? "" : "s"}
       </p>
       {groups.length === 0 && <p>No templates match.</p>}
@@ -130,7 +130,7 @@ async function Library({ searchParams }: { searchParams: Promise<Search> }) {
 
 export default function TemplatesPage({ searchParams }: { searchParams: Promise<Search> }) {
   return (
-    <main className="mx-auto max-w-6xl space-y-6 p-6">
+    <main id="main" tabIndex={-1} className="mx-auto max-w-6xl space-y-6 p-6">
       <h1 className="text-2xl font-semibold">Template library</h1>
       <Suspense fallback={<p>Loading templates…</p>}>
         <Library searchParams={searchParams} />

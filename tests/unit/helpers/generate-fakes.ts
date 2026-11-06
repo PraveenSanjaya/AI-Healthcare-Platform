@@ -50,7 +50,10 @@ export function makeDeps(
   const store = new Map<string, GenerationRecord>();
   const refinements: { generationId: string; instruction: string; output: string }[] = [];
   const generations: GenerationRepo = {
-    usageSince: async () => over.usage ?? { count: 0, oldest: null },
+    reserve: async (_u, _s, limit) => {
+      const u = over.usage ?? { count: 0, oldest: null };
+      return { reserved: u.count < limit, ...u };
+    },
     create: async (data) => {
       created.push(data);
       const id = `gen-${created.length}`;
