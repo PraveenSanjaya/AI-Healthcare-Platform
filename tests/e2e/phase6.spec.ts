@@ -10,7 +10,7 @@ import {
   staffSession,
 } from "./helpers";
 
-const NOT_FOUND = "This page could not be found";
+const NOT_FOUND = "That page does not exist, or you do not have access to it.";
 const SANDBOX = "e2e-sandbox-template";
 
 let adminContext: BrowserContext;
