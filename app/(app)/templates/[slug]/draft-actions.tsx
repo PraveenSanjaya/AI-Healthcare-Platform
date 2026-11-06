@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { canCopy } from "@/lib/ai/review";
 import { redactPHI } from "@/lib/safety/phi";
 import { findPhiInInputs } from "@/lib/safety/inputs";
+import { useToast } from "@/components/toast";
 import { reviewGenerationAction } from "../actions";
 import { FieldPhiNotice } from "./phi-check";
 
@@ -29,6 +30,7 @@ export function DraftActions(p: DraftActionsProps) {
   const [copied, setCopied] = useState<"idle" | "done" | "failed">("idle");
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [pending, start] = useTransition();
+  const toast = useToast();
 
   const patientFacing = p.audience === "PATIENT_FACING";
   const copyAllowed = p.ready && canCopy(p.audience, p.reviewed);
@@ -40,8 +42,10 @@ export function DraftActions(p: DraftActionsProps) {
     try {
       await navigator.clipboard.writeText(p.draft);
       setCopied("done");
+      toast("Draft copied to the clipboard.");
     } catch {
       setCopied("failed");
+      toast("Copy failed. Select the text and copy it manually.", "error");
     }
   }
 
@@ -53,7 +57,11 @@ export function DraftActions(p: DraftActionsProps) {
       if (r.ok) {
         setReviewError(null);
         p.onReviewed();
-      } else setReviewError(r.error);
+        toast("Marked as reviewed. Copy and export are now available.");
+      } else {
+        setReviewError(r.error);
+        toast(r.error, "error");
+      }
     });
   }
 
@@ -85,12 +93,12 @@ export function DraftActions(p: DraftActionsProps) {
           Copy
         </button>
         {copied === "done" && (
-          <span role="status" className="text-sm text-green-800">
+          <span role="status" className="text-sm text-green-800 dark:text-green-200">
             Copied
           </span>
         )}
         {copied === "failed" && (
-          <span role="alert" className="text-sm text-red-700">
+          <span role="alert" className="text-sm text-red-700 dark:text-red-300">
             Copy failed. Select the text and copy it manually.
           </span>
         )}
@@ -120,7 +128,7 @@ export function DraftActions(p: DraftActionsProps) {
           ),
         )}
         {patientFacing && !p.reviewed && (
-          <span className="text-gray-600">Review the draft to enable export.</span>
+          <span className="text-muted-foreground">Review the draft to enable export.</span>
         )}
       </div>
 
@@ -136,13 +144,13 @@ export function DraftActions(p: DraftActionsProps) {
             I have reviewed this
           </label>
           {!p.reviewed && (
-            <p className="text-sm text-gray-600">
+            <p className="text-muted-foreground text-sm">
               This is patient-facing text. Copy stays disabled until you have read it and ticked the
               box.
             </p>
           )}
           {reviewError && (
-            <p role="alert" className="text-sm text-red-700">
+            <p role="alert" className="text-sm text-red-700 dark:text-red-300">
               {reviewError}
             </p>
           )}
@@ -167,7 +175,7 @@ export function DraftActions(p: DraftActionsProps) {
           <button
             type="submit"
             disabled={!p.ready || p.busy || !instruction.trim() || refineBlocked}
-            className="rounded-md bg-black px-3 py-2 text-white disabled:opacity-50"
+            className="bg-primary text-primary-foreground rounded-md px-3 py-2 disabled:opacity-50"
           >
             Refine
           </button>
@@ -175,7 +183,7 @@ export function DraftActions(p: DraftActionsProps) {
             <button
               type="button"
               onClick={() => setInstruction(redactPHI(instruction, { includeNames: true }))}
-              className="rounded-md border border-red-400 px-3 py-2 text-red-900"
+              className="rounded-md border border-red-400 px-3 py-2 text-red-900 dark:border-red-700 dark:text-red-100"
             >
               Redact all
             </button>

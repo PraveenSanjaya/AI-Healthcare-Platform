@@ -34,9 +34,11 @@ export function VariableField({
     <div className="space-y-1">
       <label htmlFor={id} className="block text-sm font-medium">
         {variable.label}
-        {!variable.required && <span className="font-normal text-gray-600"> (optional)</span>}
+        {!variable.required && (
+          <span className="text-muted-foreground font-normal"> (optional)</span>
+        )}
         {variable.fromProfile && (
-          <span className="font-normal text-gray-600">
+          <span className="text-muted-foreground font-normal">
             {" "}
             · from clinic profile, you can change it
           </span>
@@ -59,12 +61,12 @@ export function VariableField({
       )}
       {variable.type === "text" && <input type="text" className={control} {...common} />}
       {variable.helpText && (
-        <p id={helpId} className="text-sm text-gray-600">
+        <p id={helpId} className="text-muted-foreground text-sm">
           {variable.helpText}
         </p>
       )}
       {error && (
-        <p id={errId} role="alert" className="text-sm text-red-600">
+        <p id={errId} role="alert" className="text-sm text-red-600 dark:text-red-400">
           {error.message}
         </p>
       )}

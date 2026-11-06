@@ -32,7 +32,7 @@ function History({ versions }: { versions: AdminVersion[] }) {
                 Version {v.version}
                 {i === 0 && " (current)"}
               </p>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 {fmt(v.createdAt)} · {v.createdByName ?? "seed data"}
               </p>
               {older ? (
@@ -46,17 +46,21 @@ function History({ versions }: { versions: AdminVersion[] }) {
                       {changes.map((c) => (
                         <li key={c.field}>
                           <span className="font-medium">{c.field}</span>
-                          <p className="whitespace-pre-wrap text-red-800">- {c.before}</p>
-                          <p className="whitespace-pre-wrap text-green-800">+ {c.after}</p>
+                          <p className="whitespace-pre-wrap text-red-800 dark:text-red-200">
+                            - {c.before}
+                          </p>
+                          <p className="whitespace-pre-wrap text-green-800 dark:text-green-200">
+                            + {c.after}
+                          </p>
                         </li>
                       ))}
                     </ul>
                   </details>
                 ) : (
-                  <p className="mt-1 text-gray-600">No wording changes.</p>
+                  <p className="text-muted-foreground mt-1">No wording changes.</p>
                 )
               ) : (
-                <p className="mt-1 text-gray-600">First version.</p>
+                <p className="text-muted-foreground mt-1">First version.</p>
               )}
             </li>
           );
@@ -84,11 +88,13 @@ async function Edit({ params }: { params: Promise<{ slug: string }> }) {
     <>
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-semibold">{detail.input.title}</h1>
-        <span className="rounded bg-gray-100 px-2 py-0.5 text-xs">
+        <span className="bg-muted rounded px-2 py-0.5 text-xs">
           Version {detail.currentVersion}
         </span>
         {detail.archived && (
-          <span className="rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-900">Archived</span>
+          <span className="rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-900 dark:bg-amber-900 dark:text-amber-100">
+            Archived
+          </span>
         )}
         <ArchiveButton slug={detail.slug} archived={detail.archived} />
       </div>
@@ -105,8 +111,8 @@ async function Edit({ params }: { params: Promise<{ slug: string }> }) {
 
 export default function EditTemplatePage({ params }: { params: Promise<{ slug: string }> }) {
   return (
-    <main className="mx-auto max-w-6xl space-y-6 p-6">
-      <p className="text-sm text-gray-600">
+    <main id="main" tabIndex={-1} className="mx-auto max-w-6xl space-y-6 p-6">
+      <p className="text-muted-foreground text-sm">
         <Link href="/admin/templates" className="underline">
           Manage templates
         </Link>{" "}

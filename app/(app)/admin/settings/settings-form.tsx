@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { useToast } from "@/components/toast";
 import { BRAND_TONES, PRIVACY_REGIMES, type ClinicProfileData } from "@/lib/ai/profile";
 import { saveSettingsAction } from "./actions";
 
@@ -25,9 +26,9 @@ function Field({
         {label}
       </label>
       {children}
-      {hint && <p className="text-sm text-gray-600">{hint}</p>}
+      {hint && <p className="text-muted-foreground text-sm">{hint}</p>}
       {error && (
-        <p id={`s-${name}-error`} role="alert" className="text-sm text-red-600">
+        <p id={`s-${name}-error`} role="alert" className="text-sm text-red-600 dark:text-red-400">
           {error}
         </p>
       )}
@@ -43,6 +44,10 @@ export function SettingsForm({
   canEditAll: boolean;
 }) {
   const [state, action, pending] = useActionState(saveSettingsAction, null);
+  const toast = useToast();
+  useEffect(() => {
+    if (state?.ok) toast(state.changed.length ? "Settings saved." : "No changes to save.");
+  }, [state, toast]);
   const errors = state && !state.ok ? (state.errors as Record<string, string>) : {};
   const attrs = (name: keyof ClinicProfileData) => ({
     id: `s-${name}`,
@@ -150,18 +155,18 @@ export function SettingsForm({
       </Field>
 
       {errors.form && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-red-600 dark:text-red-400">
           {errors.form}
         </p>
       )}
       {state?.ok && (
-        <p role="status" className="text-sm text-green-700">
+        <p role="status" className="text-sm text-green-700 dark:text-green-300">
           {state.changed.length ? "Settings saved." : "No changes to save."}
         </p>
       )}
       <button
         disabled={pending}
-        className="rounded-md bg-black px-3 py-2 text-white disabled:opacity-50"
+        className="bg-primary text-primary-foreground rounded-md px-3 py-2 disabled:opacity-50"
       >
         {pending ? "Saving…" : "Save settings"}
       </button>

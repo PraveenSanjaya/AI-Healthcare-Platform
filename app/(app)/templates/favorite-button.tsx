@@ -28,7 +28,7 @@ export function FavoriteButton({ slug, favorite }: { slug: string; favorite: boo
         {on ? "★ Favorited" : "☆ Favorite"}
       </button>
       {error && (
-        <span role="alert" className="ml-2 text-sm text-red-600">
+        <span role="alert" className="ml-2 text-sm text-red-600 dark:text-red-400">
           {error}
         </span>
       )}

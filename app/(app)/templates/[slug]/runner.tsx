@@ -174,7 +174,7 @@ export function Runner(props: RunnerProps) {
         <button
           type="submit"
           disabled={busy || blocked}
-          className="rounded-md bg-black px-3 py-2 text-white disabled:opacity-50"
+          className="bg-primary text-primary-foreground rounded-md px-3 py-2 disabled:opacity-50"
         >
           {busy ? "Generating…" : overridden ? "Generate with override" : "Generate"}
         </button>
@@ -213,7 +213,10 @@ function FailureMessage({ failure }: { failure: GenerateFailure }) {
     message = "Personal or health information was found, so nothing was sent.";
   else message = failure.message;
   return (
-    <p role="alert" className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+    <p
+      role="alert"
+      className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200"
+    >
       {message}
     </p>
   );

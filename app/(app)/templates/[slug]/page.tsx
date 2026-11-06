@@ -19,7 +19,9 @@ const variablesSchema = z.array(variableSchema);
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="space-y-1">
-      <h2 className="text-sm font-semibold tracking-wide text-gray-600 uppercase">{title}</h2>
+      <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
+        {title}
+      </h2>
       <p className="whitespace-pre-wrap">{children}</p>
     </section>
   );
@@ -53,7 +55,7 @@ async function Detail({
   return (
     <article className="space-y-6">
       <header className="space-y-2">
-        <p className="text-sm text-gray-600">
+        <p className="text-muted-foreground text-sm">
           <Link href="/templates" className="underline">
             Templates
           </Link>{" "}
@@ -62,7 +64,7 @@ async function Detail({
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-semibold">{t.title}</h1>
           {t.audience === "PATIENT_FACING" && (
-            <span className="rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-900">
+            <span className="rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-900 dark:bg-blue-900 dark:text-blue-100">
               Patient-facing
             </span>
           )}
@@ -86,7 +88,7 @@ async function Detail({
             </p>
           )}
           <section className="space-y-2">
-            <h2 className="text-sm font-semibold tracking-wide text-gray-600 uppercase">
+            <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
               Variables
             </h2>
             <ul className="divide-y rounded-lg border text-sm">
@@ -158,7 +160,7 @@ export default function TemplatePage({
   searchParams: Promise<Search>;
 }) {
   return (
-    <main className="mx-auto max-w-3xl p-6">
+    <main id="main" tabIndex={-1} className="mx-auto max-w-3xl p-6">
       <Suspense fallback={<p>Loading…</p>}>
         <Detail params={params} searchParams={searchParams} />
       </Suspense>

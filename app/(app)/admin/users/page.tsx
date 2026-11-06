@@ -49,7 +49,7 @@ async function UsersContent() {
 
 export default function UsersPage() {
   return (
-    <main className="mx-auto max-w-4xl space-y-8 p-6">
+    <main id="main" tabIndex={-1} className="mx-auto max-w-4xl space-y-8 p-6">
       <h1 className="text-2xl font-semibold">User management</h1>
       <Suspense fallback={<p>Loading users…</p>}>
         <UsersContent />

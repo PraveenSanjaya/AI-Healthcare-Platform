@@ -27,7 +27,7 @@ export function ArchiveButton({ slug, archived }: { slug: string; archived: bool
         {archived ? "Unarchive" : "Archive"}
       </button>
       {error && (
-        <span role="alert" className="ml-2 text-sm text-red-600">
+        <span role="alert" className="ml-2 text-sm text-red-600 dark:text-red-400">
           {error}
         </span>
       )}
