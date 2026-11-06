@@ -25,7 +25,7 @@ function Tile({ label, value, note }: { label: string; value: string; note?: str
       >
         {value}
       </dd>
-      {note && <p className="text-muted-foreground mt-1 text-xs">{note}</p>}
+      {note && <dd className="text-muted-foreground mt-1 text-xs">{note}</dd>}
     </div>
   );
 }

@@ -1,16 +1,11 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
-import { useToast } from "@/components/toast";
+import { useActionState } from "react";
 import { ROLES } from "@/lib/auth/roles";
 import { createUserAction } from "./actions";
 
 export function CreateUserForm() {
   const [state, action, pending] = useActionState(createUserAction, null);
-  const toast = useToast();
-  useEffect(() => {
-    if (state?.ok) toast("User created.");
-  }, [state, toast]);
   return (
     <form action={action} className="grid max-w-md gap-3">
       <input

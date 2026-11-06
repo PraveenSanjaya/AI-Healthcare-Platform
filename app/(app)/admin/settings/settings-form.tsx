@@ -1,11 +1,10 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
-import { useToast } from "@/components/toast";
+import { useActionState } from "react";
 import { BRAND_TONES, PRIVACY_REGIMES, type ClinicProfileData } from "@/lib/ai/profile";
 import { saveSettingsAction } from "./actions";
 
-const control = "mt-1 w-full rounded-md border px-3 py-2 font-normal read-only:bg-gray-100";
+const control = "mt-1 w-full rounded-md border px-3 py-2 font-normal read-only:bg-muted";
 
 function Field({
   name,
@@ -44,10 +43,6 @@ export function SettingsForm({
   canEditAll: boolean;
 }) {
   const [state, action, pending] = useActionState(saveSettingsAction, null);
-  const toast = useToast();
-  useEffect(() => {
-    if (state?.ok) toast(state.changed.length ? "Settings saved." : "No changes to save.");
-  }, [state, toast]);
   const errors = state && !state.ok ? (state.errors as Record<string, string>) : {};
   const attrs = (name: keyof ClinicProfileData) => ({
     id: `s-${name}`,
