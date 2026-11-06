@@ -63,6 +63,7 @@ const db: CleanDb = {
       // Audit rows reference users, so they go first; refinements go with their generation.
       const auditLogs = await tx.auditLog.deleteMany({ where: auditWhere(plan, genIds) });
       await tx.generation.deleteMany({ where: { id: { in: genIds } } });
+      await tx.rateLimitHit.deleteMany({ where: { userId: { in: plan.userIds } } });
       // A template points at its current version, so unlink before deleting it (versions cascade).
       await tx.template.updateMany({
         where: { id: { in: plan.templateIds } },

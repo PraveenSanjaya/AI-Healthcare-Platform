@@ -4,24 +4,23 @@ import type { GenerationRepo } from "./generate";
 import { DEFAULT_CLINIC_PROFILE, type ClinicProfileData } from "./profile";
 
 export const prismaGenerationRepo: GenerationRepo = {
-  async usageSince(userId, since) {
-    const [gens, refs] = await Promise.all([
-      prisma.generation.aggregate({
+  async reserve(userId, since, limit) {
+    return prisma.$transaction(async (tx) => {
+      // Serialise concurrent requests from one user for the length of this transaction.
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${userId}))`;
+      const agg = await tx.rateLimitHit.aggregate({
         where: { userId, createdAt: { gte: since } },
         _count: true,
         _min: { createdAt: true },
-      }),
-      prisma.generationRefinement.aggregate({
-        where: { generation: { userId }, createdAt: { gte: since } },
-        _count: true,
-        _min: { createdAt: true },
-      }),
-    ]);
-    const dates = [gens._min.createdAt, refs._min.createdAt].filter((d): d is Date => d !== null);
-    return {
-      count: gens._count + refs._count,
-      oldest: dates.length ? new Date(Math.min(...dates.map((d) => d.getTime()))) : null,
-    };
+      });
+      if (agg._count >= limit) {
+        return { reserved: false, count: agg._count, oldest: agg._min.createdAt };
+      }
+      await tx.rateLimitHit.create({ data: { userId } });
+      // Expired rows are of no further use.
+      await tx.rateLimitHit.deleteMany({ where: { userId, createdAt: { lt: since } } });
+      return { reserved: true, count: agg._count + 1, oldest: agg._min.createdAt };
+    });
   },
   async create(data) {
     const g = await prisma.generation.create({

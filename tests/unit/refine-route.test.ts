@@ -62,7 +62,8 @@ describe("refine: access", () => {
   });
   it("is rate limited like a generation", async () => {
     const ctx = await generated();
-    ctx.deps.generations.usageSince = async () => ({
+    ctx.deps.generations.reserve = async () => ({
+      reserved: false,
       count: 30,
       oldest: new Date("2026-11-05T11:30:00Z"),
     });
