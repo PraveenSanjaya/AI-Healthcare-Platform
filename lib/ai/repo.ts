@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import type { Prisma } from "@/lib/generated/prisma/client";
-import type { AuditEntry, GenerationRepo } from "./generate";
+import type { GenerationRepo } from "./generate";
 import { DEFAULT_CLINIC_PROFILE, type ClinicProfileData } from "./profile";
 
 export const prismaGenerationRepo: GenerationRepo = {
@@ -67,17 +67,7 @@ export const prismaGenerationRepo: GenerationRepo = {
   },
 };
 
-export async function writeAudit(e: AuditEntry): Promise<void> {
-  await prisma.auditLog.create({
-    data: {
-      actorId: e.actorId,
-      action: e.action,
-      entityType: e.entityType,
-      entityId: e.entityId,
-      metadata: e.metadata as Prisma.InputJsonValue | undefined,
-    },
-  });
-}
+export { writeAudit } from "@/lib/audit/repo";
 
 /** The single clinic profile row, or the Sri Lanka defaults if it has not been seeded. */
 export async function loadClinicProfile(): Promise<ClinicProfileData> {

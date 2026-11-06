@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
+import { writeAudit } from "@/lib/ai/repo";
 import { AuthError } from "@/lib/auth/guards";
 import { prismaUserRepo } from "@/lib/users/repo";
 import { UserError, changeRole, createUser, setUserActive } from "@/lib/users/service";
@@ -26,13 +27,15 @@ export async function createUserAction(
   _prev: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
-  return run(async () => createUser(await auth(), prismaUserRepo, Object.fromEntries(formData)));
+  return run(async () =>
+    createUser(await auth(), prismaUserRepo, Object.fromEntries(formData), writeAudit),
+  );
 }
 
 export async function changeRoleAction(userId: string, role: string): Promise<ActionResult> {
-  return run(async () => changeRole(await auth(), prismaUserRepo, userId, role));
+  return run(async () => changeRole(await auth(), prismaUserRepo, userId, role, writeAudit));
 }
 
 export async function setActiveAction(userId: string, active: boolean): Promise<ActionResult> {
-  return run(async () => setUserActive(await auth(), prismaUserRepo, userId, active));
+  return run(async () => setUserActive(await auth(), prismaUserRepo, userId, active, writeAudit));
 }

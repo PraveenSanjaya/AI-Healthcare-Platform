@@ -1,3 +1,4 @@
+import { AUDIT, type AuditWriter } from "@/lib/audit/actions";
 import { requireRole, type SessionUser } from "@/lib/auth/guards";
 import { hashPassword } from "@/lib/auth/password";
 import { createUserSchema } from "@/lib/auth/schemas";
@@ -46,8 +47,17 @@ export async function listUsers(session: SessionLike, repo: UserRepo) {
   return repo.list();
 }
 
-export async function createUser(session: SessionLike, repo: UserRepo, input: unknown) {
-  admin(session);
+/**
+ * Every change below writes an audit row when an `audit` writer is given (the server actions
+ * always pass one). Metadata holds ids and roles only, never passwords, hashes or emails.
+ */
+export async function createUser(
+  session: SessionLike,
+  repo: UserRepo,
+  input: unknown,
+  audit?: AuditWriter,
+) {
+  const me = admin(session);
   const parsed = createUserSchema.safeParse(input);
   if (!parsed.success) {
     throw new UserError("VALIDATION", parsed.error.issues[0]?.message ?? "Invalid input");
@@ -56,7 +66,15 @@ export async function createUser(session: SessionLike, repo: UserRepo, input: un
   if (await repo.emailExists(rest.email)) {
     throw new UserError("CONFLICT", "A user with that email already exists");
   }
-  return repo.create({ ...rest, passwordHash: await hashPassword(password) });
+  const created = await repo.create({ ...rest, passwordHash: await hashPassword(password) });
+  await audit?.({
+    actorId: me.id,
+    action: AUDIT.USER_CREATED,
+    entityType: "User",
+    entityId: created.id,
+    metadata: { role: created.role },
+  });
+  return created;
 }
 
 export async function changeRole(
@@ -64,12 +82,23 @@ export async function changeRole(
   repo: UserRepo,
   targetId: string,
   role: unknown,
+  audit?: AuditWriter,
 ) {
   const me = admin(session);
   if (!isRole(role)) throw new UserError("VALIDATION", "Unknown role");
   if (targetId === me.id) throw new UserError("SELF_CHANGE", "You cannot change your own role");
+  const before = (await repo.list()).find((u) => u.id === targetId);
   const updated = await repo.update(targetId, { role });
   if (!updated) throw new UserError("NOT_FOUND", "User not found");
+  if (before?.role !== updated.role) {
+    await audit?.({
+      actorId: me.id,
+      action: AUDIT.USER_ROLE_CHANGED,
+      entityType: "User",
+      entityId: targetId,
+      metadata: { from: before?.role ?? null, to: updated.role },
+    });
+  }
   return updated;
 }
 
@@ -78,6 +107,7 @@ export async function setUserActive(
   repo: UserRepo,
   targetId: string,
   active: boolean,
+  audit?: AuditWriter,
 ) {
   const me = admin(session);
   if (!active && targetId === me.id) {
@@ -85,5 +115,11 @@ export async function setUserActive(
   }
   const updated = await repo.update(targetId, { active });
   if (!updated) throw new UserError("NOT_FOUND", "User not found");
+  await audit?.({
+    actorId: me.id,
+    action: active ? AUDIT.USER_ACTIVATED : AUDIT.USER_DEACTIVATED,
+    entityType: "User",
+    entityId: targetId,
+  });
   return updated;
 }

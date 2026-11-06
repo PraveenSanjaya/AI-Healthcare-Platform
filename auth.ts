@@ -1,7 +1,8 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { authConfig } from "./auth.config";
-import { authorizeCredentials } from "@/lib/auth/authorize";
+import { authorizeWithAudit } from "@/lib/auth/login-audit";
+import { writeAudit } from "@/lib/audit/repo";
 import { prisma } from "@/lib/db/prisma";
 import { revalidateToken } from "@/lib/auth/revalidate";
 
@@ -21,7 +22,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Credentials({
       credentials: { email: {}, password: {} },
       authorize: (raw) =>
-        authorizeCredentials(raw, (email) => prisma.user.findUnique({ where: { email } })),
+        authorizeWithAudit(
+          raw,
+          (email) => prisma.user.findUnique({ where: { email } }),
+          writeAudit,
+        ),
     }),
   ],
 });

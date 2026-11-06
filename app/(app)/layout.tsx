@@ -13,9 +13,11 @@ async function Nav() {
       </Link>
       <Link href="/templates">Templates</Link>
       <Link href="/history">History</Link>
+      {user && hasRole(user.role, "MANAGER") && <Link href="/analytics">Analytics</Link>}
       {user && hasRole(user.role, "MANAGER") && <Link href="/admin/settings">Settings</Link>}
       {user && hasRole(user.role, "ADMIN") && <Link href="/admin/templates">Manage templates</Link>}
       {user && hasRole(user.role, "ADMIN") && <Link href="/admin/users">Users</Link>}
+      {user && hasRole(user.role, "ADMIN") && <Link href="/admin/audit">Audit log</Link>}
       <span className="ml-auto text-gray-600">{user?.email}</span>
       <form
         action={async () => {

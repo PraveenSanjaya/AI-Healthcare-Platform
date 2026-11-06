@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/guards";
 import { hasRole, type AppRole } from "@/lib/auth/roles";
+import { isCalendarDate } from "@/lib/dates";
 
 export const PAGE_SIZE = 20;
 
@@ -56,7 +57,7 @@ export type HistoryFilters = {
   page: number;
 };
 
-const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const day = z.string().refine(isCalendarDate, "Not a real date");
 const filtersSchema = z.object({
   template: z.string().max(200).optional(),
   from: day.optional(),
